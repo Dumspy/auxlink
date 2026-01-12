@@ -9,7 +9,7 @@ import { Elysia } from "elysia";
 const app = new Elysia()
   .use(
     cors({
-      origin: env.CORS_ORIGIN,
+      origin: env.NODE_ENV === "development" ? true : env.CORS_ORIGIN,
       methods: ["GET", "POST", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
       credentials: true,
