@@ -1,0 +1,27 @@
+{
+  "name": "@auxlink/api",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "scripts": {},
+  "dependencies": {
+    "@auxlink/auth": "workspace:*",
+    "@auxlink/db": "workspace:*",
+    "@auxlink/env": "workspace:*",
+    "@trpc/client": "catalog:",
+    "@trpc/server": "catalog:",
+    "dotenv": "catalog:",
+    "drizzle-orm": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@auxlink/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

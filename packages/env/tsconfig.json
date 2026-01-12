@@ -1,0 +1,3 @@
+{
+  "extends": "@auxlink/config/tsconfig.base.json"
+}
