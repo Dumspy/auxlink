@@ -7,9 +7,14 @@
     "dev": "bun run --watch src/index.tsx"
   },
   "dependencies": {
+    "@auxlink/api": "workspace:*",
+    "@auxlink/env": "workspace:*",
     "@opentui/core": "^0.1.72",
     "@opentui/react": "^0.1.72",
-    "react": "^19.2.3"
+    "@trpc/client": "catalog:",
+    "better-auth": "catalog:",
+    "react": "^19.2.3",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/bun": "latest"
