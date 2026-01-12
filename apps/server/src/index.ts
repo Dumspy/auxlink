@@ -11,8 +11,9 @@ const app = new Elysia()
     cors({
       origin: env.NODE_ENV === "development" ? true : env.CORS_ORIGIN,
       methods: ["GET", "POST", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization"],
+      allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
       credentials: true,
+      exposeHeaders: ["Set-Cookie"],
     }),
   )
   .all("/api/auth/*", async (context) => {
