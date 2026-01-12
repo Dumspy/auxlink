@@ -9,10 +9,13 @@ export const storage = {
   getItem(key: string): string | null {
     try {
       if (!existsSync(AUTH_FILE)) {
+        console.log(`[Storage] Auth file doesn't exist`);
         return null;
       }
       const data = JSON.parse(readFileSync(AUTH_FILE, "utf-8"));
-      return data[key] ?? null;
+      const value = data[key] ?? null;
+      console.log(`[Storage] Read key: ${key}, found: ${!!value}`);
+      return value;
     } catch {
       return null;
     }
@@ -20,6 +23,7 @@ export const storage = {
 
   setItem(key: string, value: string): void {
     try {
+      console.log(`[Storage] Writing key: ${key}`);
       mkdirSync(CONFIG_DIR, { recursive: true });
       let data: Record<string, string> = {};
 
@@ -31,6 +35,7 @@ export const storage = {
 
       data[key] = value;
       writeFileSync(AUTH_FILE, JSON.stringify(data, null, 2));
+      console.log(`[Storage] Successfully wrote ${key}`);
     } catch (error) {
       console.error("Failed to save auth data:", error);
     }
@@ -41,9 +46,11 @@ export const storage = {
       if (!existsSync(AUTH_FILE)) {
         return;
       }
+      console.log(`[Storage] Removing key: ${key}`);
       const data = JSON.parse(readFileSync(AUTH_FILE, "utf-8"));
       delete data[key];
       writeFileSync(AUTH_FILE, JSON.stringify(data, null, 2));
+      console.log(`[Storage] Successfully removed ${key}`);
     } catch {}
   },
 };
