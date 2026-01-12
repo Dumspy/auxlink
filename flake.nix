@@ -19,6 +19,7 @@
           default = pkgs.mkShell rec {
             packages = with pkgs; [
               bun
+              nodejs_22
             ];
           };
         };
