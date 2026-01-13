@@ -141,7 +141,7 @@ export function Auth({ onSuccess, onNavigationChange }: AuthProps) {
   }, [focusedField, tab, fields, handleTabSwitch, handleSubmit, onNavigationChange]);
 
   return (
-    <box style={{ flexDirection: "column", gap: 1, minWidth: 60, alignItems: "flex-start", alignSelf: "center" }}>
+    <box style={{ flexDirection: "column", gap: 1, minWidth: 60, alignItems: "center", alignSelf: "center" }}>
       {/* Header */}
       <text fg="#7C3AED">AuxLink</text>
       <text fg="#666">{tab === "login" ? "Sign in to your account" : "Create a new account"}</text>
@@ -167,57 +167,59 @@ export function Auth({ onSuccess, onNavigationChange }: AuthProps) {
         </>
       )}
 
-      {/* Form fields - always show borders, highlight when focused */}
-      <text fg="#888">Email:</text>
-      <box style={{ 
-        border: true, 
-        borderStyle: "single",
-        borderColor: focusedField === "email" ? "#7C3AED" : undefined,
-        height: 3 
-      }}>
-        <input
-          value={email}
-          placeholder="email@example.com"
-          focused={focusedField === "email"}
-          onInput={setEmail}
-          onSubmit={() => setFocusedField(tab === "signup" ? "name" : "password")}
-        />
-      </box>
+      {/* Form fields - wrapped in left-aligned box */}
+      <box style={{ flexDirection: "column", gap: 1, alignItems: "flex-start" }}>
+        <text fg="#888">Email:</text>
+        <box style={{ 
+          border: true, 
+          borderStyle: "single",
+          borderColor: focusedField === "email" ? "#7C3AED" : undefined,
+          height: 3 
+        }}>
+          <input
+            value={email}
+            placeholder="email@example.com"
+            focused={focusedField === "email"}
+            onInput={setEmail}
+            onSubmit={() => setFocusedField(tab === "signup" ? "name" : "password")}
+          />
+        </box>
 
-      {tab === "signup" && (
-        <>
-          <text fg="#888">Name:</text>
-          <box style={{ 
-            border: true, 
-            borderStyle: "single",
-            borderColor: focusedField === "name" ? "#7C3AED" : undefined,
-            height: 3 
-          }}>
-            <input
-              value={name}
-              placeholder="Your name"
-              focused={focusedField === "name"}
-              onInput={setName}
-              onSubmit={() => setFocusedField("password")}
-            />
-          </box>
-        </>
-      )}
+        {tab === "signup" && (
+          <>
+            <text fg="#888">Name:</text>
+            <box style={{ 
+              border: true, 
+              borderStyle: "single",
+              borderColor: focusedField === "name" ? "#7C3AED" : undefined,
+              height: 3 
+            }}>
+              <input
+                value={name}
+                placeholder="Your name"
+                focused={focusedField === "name"}
+                onInput={setName}
+                onSubmit={() => setFocusedField("password")}
+              />
+            </box>
+          </>
+        )}
 
-      <text fg="#888">Password:</text>
-      <box style={{ 
-        border: true, 
-        borderStyle: "single",
-        borderColor: focusedField === "password" ? "#7C3AED" : undefined,
-        height: 3 
-      }}>
-        <input
-          value={password}
-          placeholder="••••••••"
-          focused={focusedField === "password"}
-          onInput={setPassword}
-          onSubmit={() => setFocusedField("submit")}
-        />
+        <text fg="#888">Password:</text>
+        <box style={{ 
+          border: true, 
+          borderStyle: "single",
+          borderColor: focusedField === "password" ? "#7C3AED" : undefined,
+          height: 3 
+        }}>
+          <input
+            value={password}
+            placeholder="••••••••"
+            focused={focusedField === "password"}
+            onInput={setPassword}
+            onSubmit={() => setFocusedField("submit")}
+          />
+        </box>
       </box>
 
       <text></text>

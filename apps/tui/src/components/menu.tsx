@@ -147,7 +147,7 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
 
   if (loading) {
     return (
-      <box style={{ flexDirection: "column", gap: 1, alignItems: "flex-start", alignSelf: "center" }}>
+      <box style={{ flexDirection: "column", gap: 1, alignItems: "center", alignSelf: "center" }}>
         <text fg="#7C3AED">⏳ Loading...</text>
       </box>
     );
@@ -156,17 +156,19 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
   // Logout confirmation dialog
   if (showLogoutConfirm) {
     return (
-      <box style={{ flexDirection: "column", gap: 1, minWidth: 50, alignItems: "flex-start", alignSelf: "center" }}>
+      <box style={{ flexDirection: "column", gap: 1, minWidth: 50, alignItems: "center", alignSelf: "center" }}>
         <text fg="#7C3AED">Logout</text>
         <text></text>
         <text fg="#FFFFFF">Are you sure you want to logout?</text>
         <text></text>
-        <text fg={logoutFocus === "yes" ? "red" : "#888"}>
-          {logoutFocus === "yes" ? "▶ " : "  "}[Y] Yes, logout
-        </text>
-        <text fg={logoutFocus === "no" ? "#7C3AED" : "#888"}>
-          {logoutFocus === "no" ? "▶ " : "  "}[N] No, cancel
-        </text>
+        <box style={{ flexDirection: "column", gap: 0, alignItems: "flex-start" }}>
+          <text fg={logoutFocus === "yes" ? "red" : "#888"}>
+            {logoutFocus === "yes" ? "▶ " : "  "}[Y] Yes, logout
+          </text>
+          <text fg={logoutFocus === "no" ? "#7C3AED" : "#888"}>
+            {logoutFocus === "no" ? "▶ " : "  "}[N] No, cancel
+          </text>
+        </box>
         <text></text>
         <text fg="#666">↑↓ Navigate • Y/N or Enter Confirm</text>
       </box>
@@ -176,14 +178,16 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
   // Help dialog
   if (showHelp) {
     return (
-      <box style={{ flexDirection: "column", gap: 1, minWidth: 50, alignItems: "flex-start", alignSelf: "center" }}>
+      <box style={{ flexDirection: "column", gap: 1, minWidth: 50, alignItems: "center", alignSelf: "center" }}>
         <text fg="#7C3AED">Keyboard Shortcuts</text>
         <text></text>
-        <text fg="#FFFFFF">M - Messages</text>
-        <text fg="#FFFFFF">P - Pairing</text>
-        <text fg="#FFFFFF">S - Settings</text>
-        <text fg="#FFFFFF">Q - Logout</text>
-        <text fg="#FFFFFF">? - Toggle Help</text>
+        <box style={{ flexDirection: "column", gap: 0, alignItems: "flex-start" }}>
+          <text fg="#FFFFFF">M - Messages</text>
+          <text fg="#FFFFFF">P - Pairing</text>
+          <text fg="#FFFFFF">S - Settings</text>
+          <text fg="#FFFFFF">Q - Logout</text>
+          <text fg="#FFFFFF">? - Toggle Help</text>
+        </box>
         <text></text>
         <text fg="#888">↑↓ Navigate • Enter Select</text>
         <text></text>
@@ -194,7 +198,7 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
 
   // Main menu - terminal-native style
   return (
-    <box style={{ flexDirection: "column", gap: 1, minWidth: 50, alignItems: "flex-start", alignSelf: "center" }}>
+    <box style={{ flexDirection: "column", gap: 1, minWidth: 50, alignItems: "center", alignSelf: "center" }}>
       <text fg="#7C3AED">AuxLink</text>
       <text fg="#666">Welcome, {user?.name || "User"}!</text>
       <text fg="#444">{user?.email || "N/A"}</text>
@@ -204,18 +208,20 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
       <text></text>
 
       {/* Menu items - simple text list */}
-      <text fg={focusedItem === "messages" ? "#7C3AED" : "#FFFFFF"}>
-        {focusedItem === "messages" ? "▶" : " "} [M] Messages
-      </text>
-      <text fg={focusedItem === "pairing" ? "#7C3AED" : "#FFFFFF"}>
-        {focusedItem === "pairing" ? "▶" : " "} [P] Pairing
-      </text>
-      <text fg={focusedItem === "settings" ? "#7C3AED" : "#FFFFFF"}>
-        {focusedItem === "settings" ? "▶" : " "} [S] Settings
-      </text>
-      <text fg={focusedItem === "logout" ? "red" : "#FFFFFF"}>
-        {focusedItem === "logout" ? "▶" : " "} [Q] Logout
-      </text>
+      <box style={{ flexDirection: "column", gap: 0, alignItems: "flex-start" }}>
+        <text fg={focusedItem === "messages" ? "#7C3AED" : "#FFFFFF"}>
+          {focusedItem === "messages" ? "▶" : " "} [M] Messages
+        </text>
+        <text fg={focusedItem === "pairing" ? "#7C3AED" : "#FFFFFF"}>
+          {focusedItem === "pairing" ? "▶" : " "} [P] Pairing
+        </text>
+        <text fg={focusedItem === "settings" ? "#7C3AED" : "#FFFFFF"}>
+          {focusedItem === "settings" ? "▶" : " "} [S] Settings
+        </text>
+        <text fg={focusedItem === "logout" ? "red" : "#FFFFFF"}>
+          {focusedItem === "logout" ? "▶" : " "} [Q] Logout
+        </text>
+      </box>
 
       <text></text>
       <text fg="#666">Press letter key or ↑↓ to navigate • ? for help</text>
