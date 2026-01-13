@@ -49,4 +49,6 @@ export const trpc = createTRPCOptionsProxy<AppRouter>({
   queryClient,
 });
 
+// Export trpc client for direct mutation calls
+export { trpcClient };
 

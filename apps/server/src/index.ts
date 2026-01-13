@@ -9,7 +9,21 @@ import { Elysia } from "elysia";
 new Elysia()
   .use(
     cors({
-      origin: env.NODE_ENV === "development" ? true : env.CORS_ORIGIN,
+      origin: (request) => {
+        // In development, allow all origins (including null/missing origin for CLI clients)
+        if (env.NODE_ENV === "development") {
+          return true;
+        }
+        // In production, check against allowed origins
+        const origin = request.headers.get("origin");
+        if (!origin) {
+          // Allow requests without origin (CLI tools, server-to-server)
+          return true;
+        }
+        // Check against configured CORS origins
+        const allowedOrigins = env.CORS_ORIGIN.split(",");
+        return allowedOrigins.includes(origin);
+      },
       methods: ["GET", "POST", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
       credentials: true,

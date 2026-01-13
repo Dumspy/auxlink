@@ -1,9 +1,12 @@
 import { useState, useEffect, createContext } from "react";
 import { createCliRenderer } from "@opentui/core";
 import { createRoot } from "@opentui/react";
+import { hostname, platform, release } from "node:os";
 import { getSession } from "@/lib/auth-client";
 import { Auth } from "@/components/auth";
 import { Menu } from "@/components/menu";
+import { trpc } from "@/utils/trpc";
+import { getDeviceId, storeDeviceId } from "@/lib/device-storage";
 
 type Screen = "loading" | "auth" | "menu";
 
@@ -48,6 +51,36 @@ function App() {
 
     checkSession();
   }, []);
+
+  useEffect(() => {
+    async function initializeDevice() {
+      try {
+        const session = await getSession();
+        if (!session) {
+          return;
+        }
+
+        const storedDeviceId = getDeviceId();
+        const userAgent = `${platform()} ${release()} (${hostname()})`;
+
+        if (storedDeviceId) {
+          await trpc.device.updateLastSeen.mutate({ deviceId: storedDeviceId });
+        } else {
+          const device = await trpc.device.register.mutate({
+            deviceType: "tui",
+            userAgent,
+          });
+          if (device) {
+            storeDeviceId(device.id);
+          }
+        }
+      } catch (error) {
+        console.error("[device-registration] Silent failure:", error);
+      }
+    }
+
+    initializeDevice();
+  }, [screen]);
 
   // Update global handlers when they change
   useEffect(() => {

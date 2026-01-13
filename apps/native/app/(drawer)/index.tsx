@@ -1,14 +1,46 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Redirect, router } from "expo-router";
 import { Card, useThemeColor } from "heroui-native";
+import { useEffect } from "react";
 import { Text, View, Pressable } from "react-native";
+import * as Device from "expo-device";
 
 import { Container } from "@/components/container";
 import { authClient } from "@/lib/auth-client";
+import { trpcClient } from "@/utils/trpc";
+import { getDeviceId, storeDeviceId } from "@/lib/device-storage";
 
 export default function Home() {
   const { data: session } = authClient.useSession();
   const iconColor = "#7C3AED";
+
+  // Device registration - runs after auth is confirmed
+  useEffect(() => {
+    const initializeDevice = async () => {
+      if (!session?.user) {
+        return;
+      }
+
+      try {
+        const storedDeviceId = await getDeviceId();
+        const userAgent = `${Device.osName} ${Device.osVersion} (${Device.modelName})`;
+
+        if (storedDeviceId) {
+          await trpcClient.device.updateLastSeen.mutate({ deviceId: storedDeviceId });
+        } else {
+          const device = await trpcClient.device.register.mutate({
+            deviceType: "mobile",
+            userAgent,
+          });
+          await storeDeviceId(device.id);
+        }
+      } catch (error) {
+        console.error("[device-registration] Silent failure:", error);
+      }
+    };
+
+    initializeDevice();
+  }, [session?.user]);
 
   if (!session?.user) {
     return <Redirect href="/(auth)/welcome" />;
@@ -75,4 +107,5 @@ export default function Home() {
     </Container>
   );
 }
+
 

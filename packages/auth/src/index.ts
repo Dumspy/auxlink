@@ -11,14 +11,20 @@ export const auth = betterAuth({
 
     schema: schema,
   }),
-  trustedOrigins: [env.CORS_ORIGIN, "mybettertapp://", "exp://"],
+  trustedOrigins: env.NODE_ENV === "development" 
+    ? ["*"] // Allow all origins in development (including CLI clients with no origin)
+    : [
+        env.CORS_ORIGIN,
+        "mybettertapp://",
+        "exp://",
+      ],
   emailAndPassword: {
     enabled: true,
   },
   advanced: {
     defaultCookieAttributes: {
-      sameSite: "none",
-      secure: true,
+      sameSite: env.NODE_ENV === "development" ? "lax" : "none",
+      secure: env.NODE_ENV !== "development",
       httpOnly: true,
     },
   },
