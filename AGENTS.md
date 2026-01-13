@@ -16,7 +16,7 @@
 - Import order: external deps → blank line → @auxlink/* packages → relative imports
 
 ### Types & Naming
-- **camelCase**: variables, functions, object properties (`createContext`, `todoRouter`)
+- **camelCase**: variables, functions, object properties (`createContext`, `appRouter`)
 - **PascalCase**: types, interfaces, classes (`Context`, `AppRouter`, `TRPCError`)
 - **SCREAMING_SNAKE_CASE**: environment variables (`NODE_ENV`, `DATABASE_URL`)
 - Explicit types for exports: `export type AppRouter = typeof appRouter`
@@ -24,7 +24,7 @@
 
 ### Functions & Patterns
 - Prefer arrow functions: `const fn = async () => {}`
-- Use async/await for database operations: `await db.select().from(todo)`
+- Use async/await for database operations: `await db.select().from(user)`
 - Method chaining for tRPC: `.input(z.object({...})).mutation(async ({ input }) => {...})`
 - Destructure parameters: `async ({ input, ctx }) => {}`
 
