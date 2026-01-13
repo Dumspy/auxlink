@@ -2,29 +2,39 @@ import { useState, useEffect, createContext } from "react";
 import { createCliRenderer } from "@opentui/core";
 import { createRoot } from "@opentui/react";
 import { getSession } from "@/lib/auth-client";
-import { SignUp } from "@/components/sign-up";
-import { Login } from "@/components/login";
-import { Dashboard } from "@/components/dashboard";
+import { Auth } from "@/components/auth";
+import { Menu } from "@/components/menu";
 
-type Screen = "loading" | "login" | "signup" | "dashboard";
+type Screen = "loading" | "auth" | "menu";
 
 // Create a context for navigation callbacks
 export const NavigationContext = createContext<{
   onArrowUp: () => void;
   onArrowDown: () => void;
+  onKeyPress: (key: string) => void;
 }>({
   onArrowUp: () => {},
   onArrowDown: () => {},
+  onKeyPress: () => {},
 });
 
-// Global navigation handlers
+// Global navigation handlers and state
 let globalNavigationHandlers: {
   onArrowUp: () => void;
   onArrowDown: () => void;
+  onKeyPress: (key: string) => void;
 } = {
   onArrowUp: () => {},
   onArrowDown: () => {},
+  onKeyPress: () => {},
 };
+
+// Track if we're in an input field to allow typing
+let isInInputField = false;
+
+export function setInputFieldFocus(focused: boolean) {
+  isInInputField = focused;
+}
 
 function App() {
   const [screen, setScreen] = useState<Screen>("loading");
@@ -33,7 +43,7 @@ function App() {
   useEffect(() => {
     async function checkSession() {
       const session = await getSession();
-      setScreen(session ? "dashboard" : "signup");
+      setScreen(session ? "menu" : "auth");
     }
 
     checkSession();
@@ -44,23 +54,20 @@ function App() {
     globalNavigationHandlers = navigationHandlers;
   }, [navigationHandlers]);
 
-
-
   if (screen === "loading") {
     return (
       <box alignItems="center" justifyContent="center" flexGrow={1}>
-        <text fg="#00FF00">Loading...</text>
+        <text fg="#7C3AED">⏳ Loading AuxLink...</text>
       </box>
     );
   }
 
-  if (screen === "signup") {
+  if (screen === "auth") {
     return (
       <box alignItems="center" justifyContent="center" flexGrow={1}>
         <NavigationContext.Provider value={navigationHandlers}>
-          <SignUp
-            onSuccess={() => setScreen("dashboard")}
-            onSwitchToLogin={() => setScreen("login")}
+          <Auth
+            onSuccess={() => setScreen("menu")}
             onNavigationChange={setNavigationHandlers}
           />
         </NavigationContext.Provider>
@@ -68,26 +75,12 @@ function App() {
     );
   }
 
-  if (screen === "login") {
+  if (screen === "menu") {
     return (
       <box alignItems="center" justifyContent="center" flexGrow={1}>
         <NavigationContext.Provider value={navigationHandlers}>
-          <Login
-            onSuccess={() => setScreen("dashboard")}
-            onSwitchToSignUp={() => setScreen("signup")}
-            onNavigationChange={setNavigationHandlers}
-          />
-        </NavigationContext.Provider>
-      </box>
-    );
-  }
-
-  if (screen === "dashboard") {
-    return (
-      <box alignItems="center" justifyContent="center" flexGrow={1}>
-        <NavigationContext.Provider value={navigationHandlers}>
-          <Dashboard
-            onLogout={() => setScreen("login")}
+          <Menu
+            onLogout={() => setScreen("auth")}
             onNavigationChange={setNavigationHandlers}
           />
         </NavigationContext.Provider>
@@ -98,23 +91,56 @@ function App() {
   return null;
 }
 
-// Input handler to intercept arrow keys
+// Input handler to intercept arrow keys and keyboard shortcuts
 function handleInput(sequence: string): boolean {
   // Arrow key sequences
   const ARROW_UP = "\x1b[A";
   const ARROW_DOWN = "\x1b[B";
   const ARROW_RIGHT = "\x1b[C";
   const ARROW_LEFT = "\x1b[D";
+  const ENTER = "\r";
 
-  if (sequence === ARROW_UP || sequence === ARROW_LEFT) {
-    globalNavigationHandlers.onArrowUp();
-    return true; // Consume the event
-  } else if (sequence === ARROW_DOWN || sequence === ARROW_RIGHT) {
-    globalNavigationHandlers.onArrowDown();
-    return true; // Consume the event
+  // If we're in an input field, still allow arrow keys for navigation
+  // but block letter keys from being consumed by shortcuts
+  if (isInInputField) {
+    // Allow arrow keys to navigate between fields
+    if (sequence === ARROW_UP || sequence === ARROW_LEFT) {
+      globalNavigationHandlers.onArrowUp();
+      return true;
+    } else if (sequence === ARROW_DOWN || sequence === ARROW_RIGHT) {
+      globalNavigationHandlers.onArrowDown();
+      return true;
+    }
+    // Allow Tab key for switching tabs
+    else if (sequence === "\t") {
+      globalNavigationHandlers.onKeyPress(sequence);
+      return true;
+    }
+    // Let all other keys (letters, numbers, backspace, etc.) pass through to input
+    return false;
   }
 
-  return false; // Let other keys pass through
+  // Not in input field - handle navigation normally
+  if (sequence === ARROW_UP || sequence === ARROW_LEFT) {
+    globalNavigationHandlers.onArrowUp();
+    return true;
+  } else if (sequence === ARROW_DOWN || sequence === ARROW_RIGHT) {
+    globalNavigationHandlers.onArrowDown();
+    return true;
+  } else if (sequence === ENTER) {
+    // Enter key for activating focused item
+    globalNavigationHandlers.onKeyPress(sequence);
+    return true;
+  } else if (sequence === "\t") {
+    // Tab key for switching tabs or other actions
+    globalNavigationHandlers.onKeyPress(sequence);
+    return true;
+  } else if (sequence.length === 1 && /[a-zA-Z?]/.test(sequence)) {
+    globalNavigationHandlers.onKeyPress(sequence);
+    return true;
+  }
+
+  return false;
 }
 
 const renderer = await createCliRenderer({

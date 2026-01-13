@@ -5,13 +5,9 @@ import { useThemeColor } from "heroui-native";
 import React, { useCallback } from "react";
 import { Pressable, Text } from "react-native";
 
-import { ThemeToggle } from "@/components/theme-toggle";
-
 function DrawerLayout() {
   const themeColorForeground = useThemeColor("foreground");
   const themeColorBackground = useThemeColor("background");
-
-  const renderThemeToggle = useCallback(() => <ThemeToggle />, []);
 
   return (
     <Drawer
@@ -22,14 +18,13 @@ function DrawerLayout() {
           fontWeight: "600",
           color: themeColorForeground,
         },
-        headerRight: renderThemeToggle,
         drawerStyle: { backgroundColor: themeColorBackground },
       }}
     >
       <Drawer.Screen
         name="index"
         options={{
-          headerTitle: "Home",
+          headerTitle: "AuxLink",
           drawerLabel: ({ color, focused }) => (
             <Text style={{ color: focused ? color : themeColorForeground }}>Home</Text>
           ),
@@ -43,26 +38,25 @@ function DrawerLayout() {
         }}
       />
       <Drawer.Screen
-        name="(tabs)"
+        name="settings"
         options={{
-          headerTitle: "Tabs",
+          headerTitle: "Settings",
           drawerLabel: ({ color, focused }) => (
-            <Text style={{ color: focused ? color : themeColorForeground }}>Tabs</Text>
+            <Text style={{ color: focused ? color : themeColorForeground }}>Settings</Text>
           ),
           drawerIcon: ({ size, color, focused }) => (
-            <MaterialIcons
-              name="border-bottom"
+            <Ionicons
+              name="settings-outline"
               size={size}
               color={focused ? color : themeColorForeground}
             />
           ),
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable className="mr-4">
-                <Ionicons name="add-outline" size={24} color={themeColorForeground} />
-              </Pressable>
-            </Link>
-          ),
+        }}
+      />
+      <Drawer.Screen
+        name="(tabs)"
+        options={{
+          drawerItemStyle: { display: "none" },
         }}
       />
     </Drawer>
