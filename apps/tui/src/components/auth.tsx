@@ -168,13 +168,14 @@ export function Auth({ onSuccess, onNavigationChange }: AuthProps) {
       )}
 
       {/* Form fields - wrapped in left-aligned box */}
-      <box style={{ flexDirection: "column", gap: 1, alignItems: "flex-start" }}>
+      <box style={{ flexDirection: "column", gap: 1, alignItems: "flex-start", minWidth: 60 }}>
         <text fg="#888">Email:</text>
         <box style={{ 
           border: true, 
           borderStyle: "single",
           borderColor: focusedField === "email" ? "#7C3AED" : undefined,
-          height: 3 
+          height: 3,
+          width: 60
         }}>
           <input
             value={email}
@@ -192,7 +193,8 @@ export function Auth({ onSuccess, onNavigationChange }: AuthProps) {
               border: true, 
               borderStyle: "single",
               borderColor: focusedField === "name" ? "#7C3AED" : undefined,
-              height: 3 
+              height: 3,
+              width: 60
             }}>
               <input
                 value={name}
@@ -210,7 +212,8 @@ export function Auth({ onSuccess, onNavigationChange }: AuthProps) {
           border: true, 
           borderStyle: "single",
           borderColor: focusedField === "password" ? "#7C3AED" : undefined,
-          height: 3 
+          height: 3,
+          width: 60
         }}>
           <input
             value={password}
