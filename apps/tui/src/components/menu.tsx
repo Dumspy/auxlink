@@ -125,60 +125,64 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
       return;
     }
 
-    const deviceId = getDeviceId();
-    if (!deviceId) {
-      return;
-    }
+    const setupSubscription = async () => {
+      const deviceId = await getDeviceId();
+      if (!deviceId) {
+        return;
+      }
 
-    // Try to get last message ID for reconnection
-    const lastMessageId = storage.getItem(`lastMessageId:${deviceId}`);
+      // Try to get last message ID for reconnection
+      const lastMessageId = await storage.getItem(`lastMessageId:${deviceId}`);
 
-    try {
-      const subscription = trpc.message.onMessage.subscribe(
-        { 
-          deviceId,
-          lastEventId: lastMessageId || undefined,
-        },
-        {
-          onData(event: any) {
-            // Check if this is an error event (has code/data but no message object)
-            if (event?.code || event?.data?.code) {
-              return;
-            }
-            
-            // Extract message from event
-            const msg = event?.data?.message;
-            
-            if (!msg || !msg.senderDeviceId || !msg.encryptedContent) {
-              return;
-            }
-            
-            // Store this message ID for future reconnections
-            storage.setItem(`lastMessageId:${deviceId}`, msg.id);
-            
-            // TODO: Handle received message (Phase 4 - add to message store)
+      try {
+        const subscription = trpc.message.onMessage.subscribe(
+          { 
+            deviceId,
+            lastEventId: lastMessageId || undefined,
           },
-          onError(err: any) {
-            console.error("[message-subscription] Error:", err);
-          },
-        }
-      );
+          {
+            async onData(event: any) {
+              // Check if this is an error event (has code/data but no message object)
+              if (event?.code || event?.data?.code) {
+                return;
+              }
+              
+              // Extract message from event
+              const msg = event?.data?.message;
+              
+              if (!msg || !msg.senderDeviceId || !msg.encryptedContent) {
+                return;
+              }
+              
+              // Store this message ID for future reconnections
+              await storage.setItem(`lastMessageId:${deviceId}`, msg.id);
+              
+              // TODO: Handle received message (Phase 4 - add to message store)
+            },
+            onError(err: any) {
+              console.error("[message-subscription] Error:", err);
+            },
+          }
+        );
 
-      return () => {
-        subscription.unsubscribe();
-      };
-    } catch (error: any) {
-      console.error("[message-subscription] Failed to create subscription:", error);
-    }
+        return () => {
+          subscription.unsubscribe();
+        };
+      } catch (error: any) {
+        console.error("[message-subscription] Failed to create subscription:", error);
+      }
+    };
+
+    setupSubscription();
   }, [user]);
 
   async function handleLogout() {
     try {
       await authClient.signOut();
-      storage.removeItem("better-auth.session_token");
+      await storage.removeItem("better-auth.session_token");
       onLogout();
     } catch (err) {
-      storage.removeItem("better-auth.session_token");
+      await storage.removeItem("better-auth.session_token");
       onLogout();
     }
   }

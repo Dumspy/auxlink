@@ -22,20 +22,25 @@ class CookieEventSource extends EventTarget {
     
     // Get cookie from storage
     let cookieHeader = "";
-    try {
-      const sessionToken = storage.getItem("better-auth.session_token");
+    
+    // Store the promise to get session token
+    storage.getItem("better-auth.session_token").then(sessionToken => {
       if (sessionToken) {
         cookieHeader = `better-auth.session_token=${sessionToken}`;
         logger.log("[trpc] Cookie will be sent:", cookieHeader);
       }
-    } catch (error) {
+      
+      // Use fetch to establish connection with cookie header
+      this.readyState = 0; // CONNECTING
+      this.abortController = new AbortController();
+      this.startFetch(url, cookieHeader);
+    }).catch(error => {
       logger.error("[trpc] Failed to get session token:", error);
-    }
-    
-    // Use fetch to establish connection with cookie header
-    this.readyState = 0; // CONNECTING
-    this.abortController = new AbortController();
-    this.startFetch(url, cookieHeader);
+      // Still try to start fetch without cookie
+      this.readyState = 0; // CONNECTING
+      this.abortController = new AbortController();
+      this.startFetch(url, cookieHeader);
+    });
   }
   
   private async startFetch(url: string, cookie: string) {
@@ -167,10 +172,10 @@ export const trpc = createTRPCClient<AppRouter>({
       // Use httpBatchLink for queries and mutations
       false: httpBatchLink({
         url: `${env.PUBLIC_SERVER_URL}/trpc`,
-        headers() {
+        async headers() {
           try {
             // Get session token from storage and construct cookie header
-            const sessionToken = storage.getItem("better-auth.session_token");
+            const sessionToken = await storage.getItem("better-auth.session_token");
             if (sessionToken) {
               return { Cookie: `better-auth.session_token=${sessionToken}` };
             }

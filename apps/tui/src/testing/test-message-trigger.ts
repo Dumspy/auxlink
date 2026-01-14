@@ -22,7 +22,7 @@ async function main() {
   console.log("[message-trigger] Recipient device:", recipientDeviceId);
   console.log("[message-trigger] Content:", content);
 
-  const token = storage.getItem("better-auth.session_token");
+  const token = await storage.getItem("better-auth.session_token");
   if (!token) {
     console.error("[message-trigger] ERROR: No session token found");
     process.exit(1);

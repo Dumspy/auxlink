@@ -1,7 +1,7 @@
 import { useState, useEffect, createContext } from "react";
 import { createCliRenderer } from "@opentui/core";
 import { createRoot } from "@opentui/react";
-import { hostname, platform, release } from "node:os";
+import { hostname, platform, release } from "os";
 import { getSession } from "@/lib/auth-client";
 import { Auth } from "@/components/auth";
 import { Menu } from "@/components/menu";
@@ -60,7 +60,7 @@ function App() {
           return;
         }
 
-        const storedDeviceId = getDeviceId();
+        const storedDeviceId = await getDeviceId();
         const userAgent = `${platform()} ${release()} (${hostname()})`;
 
         if (storedDeviceId) {
@@ -71,7 +71,7 @@ function App() {
             userAgent,
           });
           if (device) {
-            storeDeviceId(device.id);
+            await storeDeviceId(device.id);
           }
         }
       } catch (error) {

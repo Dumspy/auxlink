@@ -12,7 +12,7 @@ import { getDeviceId } from "../lib/device-storage";
 async function main() {
   logger.log("[listener-check] Starting...");
 
-  const deviceId = getDeviceId();
+  const deviceId = await getDeviceId();
   if (!deviceId) {
     logger.log("[listener-check] No device ID found");
     return;

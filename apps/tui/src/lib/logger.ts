@@ -1,21 +1,12 @@
-import { appendFileSync, existsSync, mkdirSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
-
-const LOG_DIR = join(homedir(), ".auxlink");
-const LOG_FILE = join(LOG_DIR, "tui-debug.log");
-
-// Ensure log directory exists
-if (!existsSync(LOG_DIR)) {
-  mkdirSync(LOG_DIR, { recursive: true });
-}
+const LOG_DIR = `${Bun.env.HOME}/.auxlink`;
+const LOG_FILE = `${LOG_DIR}/tui-debug.log`;
 
 function formatTimestamp(): string {
   const now = new Date();
   return now.toISOString();
 }
 
-function writeToFile(level: string, ...args: any[]) {
+async function writeToFile(level: string, ...args: any[]) {
   try {
     const timestamp = formatTimestamp();
     const message = args
@@ -32,7 +23,11 @@ function writeToFile(level: string, ...args: any[]) {
       .join(" ");
     
     const logLine = `[${timestamp}] [${level}] ${message}\n`;
-    appendFileSync(LOG_FILE, logLine);
+    
+    // Read existing content and append
+    const file = Bun.file(LOG_FILE);
+    const existingContent = (await file.exists()) ? await file.text() : "";
+    await Bun.write(LOG_FILE, existingContent + logLine);
   } catch (error) {
     // Fallback to console if file writing fails
     console.error("Failed to write to log file:", error);
@@ -42,36 +37,31 @@ function writeToFile(level: string, ...args: any[]) {
 export const logger = {
   log(...args: any[]) {
     console.log(...args);
-    writeToFile("INFO", ...args);
+    writeToFile("INFO", ...args).catch(() => {});
   },
   error(...args: any[]) {
     console.error(...args);
-    writeToFile("ERROR", ...args);
+    writeToFile("ERROR", ...args).catch(() => {});
   },
   warn(...args: any[]) {
     console.warn(...args);
-    writeToFile("WARN", ...args);
+    writeToFile("WARN", ...args).catch(() => {});
   },
   info(...args: any[]) {
     console.info(...args);
-    writeToFile("INFO", ...args);
+    writeToFile("INFO", ...args).catch(() => {});
   },
   debug(...args: any[]) {
     console.debug(...args);
-    writeToFile("DEBUG", ...args);
+    writeToFile("DEBUG", ...args).catch(() => {});
   },
   getLogPath() {
     return LOG_FILE;
   },
   clearLog() {
-    try {
-      const fs = require("node:fs");
-      if (existsSync(LOG_FILE)) {
-        fs.writeFileSync(LOG_FILE, "");
-      }
-    } catch (error) {
+    Bun.write(LOG_FILE, "").catch((error) => {
       console.error("Failed to clear log file:", error);
-    }
+    });
   },
 };
 

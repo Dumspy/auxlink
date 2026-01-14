@@ -7,7 +7,7 @@ export const authClient = createAuthClient({
   fetchOptions: {
     // Inject stored session token as cookie header
     onRequest: async (context) => {
-      const sessionToken = storage.getItem("better-auth.session_token");
+      const sessionToken = await storage.getItem("better-auth.session_token");
       if (sessionToken) {
         // Add cookie header to all requests
         const headers = new Headers(context.headers);
@@ -28,7 +28,7 @@ export const authClient = createAuthClient({
         if (sessionTokenMatch && sessionTokenMatch[1]) {
           const token = sessionTokenMatch[1];
           // Store the token
-          storage.setItem("better-auth.session_token", token);
+          await storage.setItem("better-auth.session_token", token);
           console.log("[Auth] Session token stored");
         }
       }
@@ -38,7 +38,7 @@ export const authClient = createAuthClient({
     onError: async (context) => {
       if (context.response?.status === 401) {
         // Clear invalid token
-        storage.removeItem("better-auth.session_token");
+        await storage.removeItem("better-auth.session_token");
         console.log("[Auth] Session token cleared (unauthorized)");
       }
     },

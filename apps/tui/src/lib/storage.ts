@@ -1,18 +1,15 @@
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
-
-const CONFIG_DIR = join(homedir(), ".auxlink");
-const AUTH_FILE = join(CONFIG_DIR, "auth.json");
+const CONFIG_DIR = `${Bun.env.HOME}/.auxlink`;
+const AUTH_FILE = `${CONFIG_DIR}/auth.json`;
 
 export const storage = {
-  getItem(key: string): string | null {
+  async getItem(key: string): Promise<string | null> {
     try {
-      if (!existsSync(AUTH_FILE)) {
+      const file = Bun.file(AUTH_FILE);
+      if (!(await file.exists())) {
         console.log(`[Storage] Auth file doesn't exist`);
         return null;
       }
-      const data = JSON.parse(readFileSync(AUTH_FILE, "utf-8"));
+      const data = await file.json();
       const value = data[key] ?? null;
       console.log(`[Storage] Read key: ${key}, found: ${!!value}`);
       return value;
@@ -21,35 +18,36 @@ export const storage = {
     }
   },
 
-  setItem(key: string, value: string): void {
+  async setItem(key: string, value: string): Promise<void> {
     try {
       console.log(`[Storage] Writing key: ${key}`);
-      mkdirSync(CONFIG_DIR, { recursive: true });
       let data: Record<string, string> = {};
 
-      if (existsSync(AUTH_FILE)) {
+      const file = Bun.file(AUTH_FILE);
+      if (await file.exists()) {
         try {
-          data = JSON.parse(readFileSync(AUTH_FILE, "utf-8"));
+          data = await file.json();
         } catch {}
       }
 
       data[key] = value;
-      writeFileSync(AUTH_FILE, JSON.stringify(data, null, 2));
+      await Bun.write(AUTH_FILE, JSON.stringify(data, null, 2));
       console.log(`[Storage] Successfully wrote ${key}`);
     } catch (error) {
       console.error("Failed to save auth data:", error);
     }
   },
 
-  removeItem(key: string): void {
+  async removeItem(key: string): Promise<void> {
     try {
-      if (!existsSync(AUTH_FILE)) {
+      const file = Bun.file(AUTH_FILE);
+      if (!(await file.exists())) {
         return;
       }
       console.log(`[Storage] Removing key: ${key}`);
-      const data = JSON.parse(readFileSync(AUTH_FILE, "utf-8"));
+      const data = await file.json();
       delete data[key];
-      writeFileSync(AUTH_FILE, JSON.stringify(data, null, 2));
+      await Bun.write(AUTH_FILE, JSON.stringify(data, null, 2));
       console.log(`[Storage] Successfully removed ${key}`);
     } catch {}
   },

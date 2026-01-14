@@ -33,7 +33,7 @@ async function main() {
   console.log("[message-send] Message:", message);
 
   // Check if we have a session token
-  const token = storage.getItem("better-auth.session_token");
+  const token = await storage.getItem("better-auth.session_token");
   if (!token) {
     console.error("[message-send] ERROR: No session token found");
     console.error("[message-send] Please login to the TUI first:");

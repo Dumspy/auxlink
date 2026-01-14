@@ -13,7 +13,7 @@ async function main() {
   console.log("=== Device Debug Info ===\n");
 
   // Check session token
-  const token = storage.getItem("better-auth.session_token");
+  const token = await storage.getItem("better-auth.session_token");
   if (!token) {
     console.error("❌ No session token found");
     console.error("Please login to the TUI first");
@@ -22,7 +22,7 @@ async function main() {
   console.log("✅ Session token found");
 
   // Check device ID
-  const deviceId = getDeviceId();
+  const deviceId = await getDeviceId();
   if (!deviceId) {
     console.error("❌ No device ID found");
     console.error("Device has not been registered yet");
