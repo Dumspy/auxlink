@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Redirect, router } from "expo-router";
 import { Card, useThemeColor } from "heroui-native";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Text, View, Pressable } from "react-native";
 import * as Device from "expo-device";
 
@@ -40,6 +40,52 @@ export default function Home() {
     };
 
     initializeDevice();
+  }, [session?.user]);
+
+  // Message subscription for real-time delivery
+  useEffect(() => {
+    if (!session?.user) {
+      return;
+    }
+
+    const initMessageSubscription = async () => {
+      const deviceId = await getDeviceId();
+      if (!deviceId) {
+        return;
+      }
+
+      const subscription = trpcClient.message.onMessage.subscribe(
+        { deviceId },
+        {
+          onData(event) {
+            // Check if this is an error event
+            if (event.data?.code || (event as any).code) {
+              return;
+            }
+            
+            const msg = event.data?.message;
+            
+            if (!msg || !msg.senderDeviceId || !msg.encryptedContent) {
+              return;
+            }
+            
+            // TODO: Handle received message (Phase 4 - add to message store)
+          },
+          onError(err) {
+            console.error("[message-subscription] Error:", err);
+          },
+        }
+      );
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    };
+
+    const cleanup = initMessageSubscription();
+    return () => {
+      cleanup.then((fn) => fn?.());
+    };
   }, [session?.user]);
 
   if (!session?.user) {

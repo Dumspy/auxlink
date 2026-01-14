@@ -13,6 +13,7 @@
     "@opentui/react": "^0.1.72",
     "@trpc/client": "catalog:",
     "better-auth": "catalog:",
+    "eventsource": "^4.1.0",
     "react": "^19.2.3",
     "zod": "catalog:"
   },

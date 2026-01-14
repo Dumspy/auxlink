@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { authClient, getSession } from "@/lib/auth-client";
 import { storage } from "@/lib/storage";
+import { getDeviceId } from "@/lib/device-storage";
+import { trpc } from "@/utils/trpc";
+import { logger } from "@/lib/logger";
 
 interface MenuProps {
   onLogout: () => void;
@@ -115,6 +118,59 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
 
     loadUser();
   }, []);
+
+  // Message subscription for real-time delivery
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    const deviceId = getDeviceId();
+    if (!deviceId) {
+      return;
+    }
+
+    // Try to get last message ID for reconnection
+    const lastMessageId = storage.getItem(`lastMessageId:${deviceId}`);
+
+    try {
+      const subscription = trpc.message.onMessage.subscribe(
+        { 
+          deviceId,
+          lastEventId: lastMessageId || undefined,
+        },
+        {
+          onData(event: any) {
+            // Check if this is an error event (has code/data but no message object)
+            if (event?.code || event?.data?.code) {
+              return;
+            }
+            
+            // Extract message from event
+            const msg = event?.data?.message;
+            
+            if (!msg || !msg.senderDeviceId || !msg.encryptedContent) {
+              return;
+            }
+            
+            // Store this message ID for future reconnections
+            storage.setItem(`lastMessageId:${deviceId}`, msg.id);
+            
+            // TODO: Handle received message (Phase 4 - add to message store)
+          },
+          onError(err: any) {
+            console.error("[message-subscription] Error:", err);
+          },
+        }
+      );
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    } catch (error: any) {
+      console.error("[message-subscription] Failed to create subscription:", error);
+    }
+  }, [user]);
 
   async function handleLogout() {
     try {
