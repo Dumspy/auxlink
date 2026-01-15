@@ -175,7 +175,7 @@ export default function Home() {
         <Pressable
           className="w-full active:opacity-70"
           onPress={() => {
-            // TODO: Navigate to pairing screen (Phase 3)
+            router.push("/(drawer)/pairing" as any);
           }}
         >
           <Card variant="secondary" className="p-6">

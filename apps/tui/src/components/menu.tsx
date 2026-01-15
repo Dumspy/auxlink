@@ -4,6 +4,7 @@ import { storage } from "@/lib/storage";
 import { getDeviceId } from "@/lib/device-storage";
 import { trpc } from "@/utils/trpc";
 import { logger } from "@/lib/logger";
+import { Pairing } from "@/components/pairing";
 
 interface MenuProps {
   onLogout: () => void;
@@ -16,10 +17,12 @@ interface MenuProps {
 
 type MenuItem = "messages" | "pairing" | "settings" | "logout";
 type LogoutFocus = "yes" | "no";
+type Screen = "menu" | "pairing";
 
 export function Menu({ onLogout, onNavigationChange }: MenuProps) {
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [screen, setScreen] = useState<Screen>("menu");
   const [focusedItem, setFocusedItem] = useState<MenuItem>("messages");
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [logoutFocus, setLogoutFocus] = useState<LogoutFocus>("no");
@@ -193,7 +196,7 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
         // TODO: Navigate to messages screen (Phase 4)
         break;
       case "pairing":
-        // TODO: Navigate to pairing screen (Phase 3)
+        setScreen("pairing");
         break;
       case "settings":
         // TODO: Navigate to settings screen (Phase 5)
@@ -211,6 +214,11 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
         <text fg="#7C3AED">⏳ Loading...</text>
       </box>
     );
+  }
+
+  // Pairing screen
+  if (screen === "pairing") {
+    return <Pairing onBack={() => setScreen("menu")} onNavigationChange={onNavigationChange} />;
   }
 
   // Logout confirmation dialog

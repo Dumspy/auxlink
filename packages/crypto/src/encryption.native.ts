@@ -1,32 +1,24 @@
 /**
- * Node.js/Bun compatible encryption using AES-256-GCM
+ * React Native compatible encryption using expo-crypto and Web Crypto API
  * 
- * Uses the same AES-256-GCM algorithm as the mobile version for compatibility.
- * This allows TUI and mobile devices to exchange encrypted messages seamlessly.
+ * Uses AES-256-GCM for symmetric encryption, which is:
+ * - Supported by expo-crypto for random number generation
+ * - Supported by Web Crypto API (available in React Native)
+ * - Fast and secure for message encryption
+ * - Doesn't require native modules
  */
 
-import { randomBytes } from "crypto";
-import { webcrypto } from "crypto";
-
-const crypto = webcrypto as unknown as Crypto;
-
-/**
- * Key pair interface (for symmetric encryption, both keys are the same)
- */
-export interface KeyPair {
-  publicKey: string;   // Base64 encoded AES key
-  privateKey: string;  // Base64 encoded AES key (same as publicKey)
-}
+import * as Crypto from "expo-crypto";
 
 /**
  * Generate a random AES-256 key
  * Returns base64 encoded key
  */
-export const generateAESKey = async (): Promise<string> => {
+export async function generateAESKey(): Promise<string> {
   // Generate 32 random bytes (256 bits) for AES-256
-  const keyBytes = randomBytes(32);
-  return keyBytes.toString("base64");
-};
+  const keyBytes = await Crypto.getRandomBytesAsync(32);
+  return btoa(String.fromCharCode(...keyBytes));
+}
 
 /**
  * Encrypt data with AES-256-GCM
@@ -34,9 +26,9 @@ export const generateAESKey = async (): Promise<string> => {
  * @param keyBase64 - AES key in base64 format
  * @returns Base64 encoded ciphertext with IV prepended
  */
-export const encryptAES = async (plaintext: string, keyBase64: string): Promise<string> => {
+export async function encryptAES(plaintext: string, keyBase64: string): Promise<string> {
   // Decode the key from base64
-  const keyData = Buffer.from(keyBase64, "base64");
+  const keyData = Uint8Array.from(atob(keyBase64), c => c.charCodeAt(0));
   
   // Import key for Web Crypto API
   const key = await crypto.subtle.importKey(
@@ -48,7 +40,7 @@ export const encryptAES = async (plaintext: string, keyBase64: string): Promise<
   );
   
   // Generate random IV (12 bytes recommended for GCM)
-  const iv = randomBytes(12);
+  const iv = await Crypto.getRandomBytesAsync(12);
   
   // Encode plaintext to bytes
   const encoder = new TextEncoder();
@@ -63,11 +55,13 @@ export const encryptAES = async (plaintext: string, keyBase64: string): Promise<
   
   // Combine IV + ciphertext
   const ciphertext = new Uint8Array(ciphertextBuffer);
-  const combined = Buffer.concat([iv, Buffer.from(ciphertext)]);
+  const combined = new Uint8Array(iv.length + ciphertext.length);
+  combined.set(iv);
+  combined.set(ciphertext, iv.length);
   
   // Return as base64
-  return combined.toString("base64");
-};
+  return btoa(String.fromCharCode(...combined));
+}
 
 /**
  * Decrypt data with AES-256-GCM
@@ -75,9 +69,9 @@ export const encryptAES = async (plaintext: string, keyBase64: string): Promise<
  * @param keyBase64 - AES key in base64 format
  * @returns Decrypted plaintext
  */
-export const decryptAES = async (ciphertextBase64: string, keyBase64: string): Promise<string> => {
+export async function decryptAES(ciphertextBase64: string, keyBase64: string): Promise<string> {
   // Decode the key from base64
-  const keyData = Buffer.from(keyBase64, "base64");
+  const keyData = Uint8Array.from(atob(keyBase64), c => c.charCodeAt(0));
   
   // Import key for Web Crypto API
   const key = await crypto.subtle.importKey(
@@ -89,11 +83,11 @@ export const decryptAES = async (ciphertextBase64: string, keyBase64: string): P
   );
   
   // Decode combined IV + ciphertext from base64
-  const combined = Buffer.from(ciphertextBase64, "base64");
+  const combined = Uint8Array.from(atob(ciphertextBase64), c => c.charCodeAt(0));
   
   // Extract IV (first 12 bytes) and ciphertext (rest)
-  const iv = combined.subarray(0, 12);
-  const ciphertext = combined.subarray(12);
+  const iv = combined.slice(0, 12);
+  const ciphertext = combined.slice(12);
   
   // Decrypt
   const plaintextBuffer = await crypto.subtle.decrypt(
@@ -105,30 +99,36 @@ export const decryptAES = async (ciphertextBase64: string, keyBase64: string): P
   // Decode bytes to string
   const decoder = new TextDecoder();
   return decoder.decode(plaintextBuffer);
-};
+}
+
+// For compatibility with the existing API
+export interface KeyPair {
+  publicKey: string;  // For mobile, this will be the AES key (acting as "public")
+  privateKey: string; // Same as publicKey for symmetric encryption
+}
 
 /**
- * Generate "key pair" (actually just an AES key used symmetrically)
+ * Generate "key pair" for mobile (actually just an AES key used symmetrically)
  * This maintains API compatibility while using symmetric encryption
  */
-export const generateKeyPair = async (): Promise<KeyPair> => {
+export async function generateKeyPair(): Promise<KeyPair> {
   const aesKey = await generateAESKey();
   return {
     publicKey: aesKey,
     privateKey: aesKey, // Same key for symmetric encryption
   };
-};
+}
 
 /**
  * "Encrypt" using the shared AES key
  */
-export const encrypt = async (plaintext: string, publicKeyPEM: string): Promise<string> => {
+export async function encrypt(plaintext: string, publicKeyPEM: string): Promise<string> {
   return encryptAES(plaintext, publicKeyPEM);
-};
+}
 
 /**
  * "Decrypt" using the shared AES key
  */
-export const decrypt = async (ciphertext: string, privateKeyPEM: string): Promise<string> => {
+export async function decrypt(ciphertext: string, privateKeyPEM: string): Promise<string> {
   return decryptAES(ciphertext, privateKeyPEM);
-};
+}

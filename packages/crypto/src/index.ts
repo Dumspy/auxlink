@@ -1,5 +1,6 @@
 // Main exports for encryption functionality
 export * from "./encryption";
+export * from "./message";
 export * from "./qr/matrix";
 export * from "./qr/renderer";
 

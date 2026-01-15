@@ -1,15 +1,15 @@
 #!/usr/bin/env bun
 /**
- * Test Message Send Script (Task 27)
+ * Test Message Send Script (Task 27) - Updated with Encryption
  * 
  * Usage: bun run apps/tui/src/testing/test-message-send.ts <sender-device-id> <recipient-device-id> <message>
  * 
- * This script sends a test message from one device to another.
- * Use this to test message routing through the SSE pipeline.
+ * This script sends a test message from one device to another with end-to-end encryption.
+ * The message is encrypted with the recipient's public key before sending.
  */
 
 import { storage } from "../lib/storage";
-import { trpc } from "../utils/trpc";
+import { sendEncryptedMessage } from "../lib/messaging";
 
 async function main() {
   const args = process.argv.slice(2);
@@ -17,11 +17,11 @@ async function main() {
   if (args.length < 3) {
     console.error("Usage: bun run apps/tui/src/testing/test-message-send.ts <sender-device-id> <recipient-device-id> <message>");
     console.error("\nExample:");
-    console.error('  bun run apps/tui/src/testing/test-message-send.ts "abc123" "def456" "Hello from mobile!"');
+    console.error('  bun run apps/tui/src/testing/test-message-send.ts "abc123" "def456" "Hello from TUI!"');
     console.error("\nTo get device IDs:");
     console.error("  1. Check TUI device ID: cat ~/.auxlink/device-id");
     console.error("  2. Check mobile logs for device ID");
-    console.error("  3. Or call: trpc.device.list.query()");
+    console.error("  3. Or use the TUI menu to view paired devices");
     process.exit(1);
   }
 
@@ -44,23 +44,15 @@ async function main() {
   console.log("[message-send] Session token found ✓");
 
   try {
-    // Encode message as base64 (simulating encryption)
-    const encryptedContent = Buffer.from(message).toString("base64");
-    
-    // Send the message
-    console.log("[message-send] Sending message...");
-    const result = await trpc.message.send.mutate({
-      senderDeviceId,
-      recipientDeviceId,
-      encryptedContent,
-      messageType: "message",
-      contentType: "text",
-    });
+    // Send encrypted message
+    console.log("[message-send] Encrypting with recipient's public key...");
+    const result = await sendEncryptedMessage(senderDeviceId, recipientDeviceId, message);
 
-    console.log("[message-send] Success!", result);
+    console.log("[message-send] Success! Message encrypted and sent ✓");
     console.log("[message-send] Message ID:", result.id);
     console.log("[message-send] Status:", result.status);
-    console.log("[message-send] The recipient device should receive the message now.");
+    console.log("[message-send] Sent at:", result.sentAt);
+    console.log("[message-send] The recipient device should receive the encrypted message now.");
   } catch (error: any) {
     console.error("[message-send] ERROR:", error.message || error);
     if (error.data) {

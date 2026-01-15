@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@auxlink/api": "workspace:*",
+    "@auxlink/crypto": "workspace:*",
     "@auxlink/env": "workspace:*",
     "@opentui/core": "^0.1.72",
     "@opentui/react": "^0.1.72",

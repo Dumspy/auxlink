@@ -4,17 +4,25 @@ import * as QRCode from "qrcode";
  * Generate QR code matrix (2D boolean array)
  * 
  * @param data - String data to encode in QR code
+ * @param errorCorrectionLevel - Error correction level (L, M, Q, H). Default: L for smaller size
  * @returns Promise<boolean[][]> - 2D array where true = black, false = white
  */
-export const generateQRMatrix = async (data: string): Promise<boolean[][]> => {
+export const generateQRMatrix = async (
+  data: string,
+  errorCorrectionLevel: "L" | "M" | "Q" | "H" = "L"
+): Promise<boolean[][]> => {
   try {
     if (!data) {
       throw new Error("Data cannot be empty");
     }
 
-    // Generate QR code with error correction level M (Medium)
+    // Generate QR code with specified error correction level
+    // L (Low) ~7% error correction - smallest size
+    // M (Medium) ~15% error correction - balanced
+    // Q (Quartile) ~25% error correction
+    // H (High) ~30% error correction - largest size
     const qrData = await QRCode.create(data, {
-      errorCorrectionLevel: "M",
+      errorCorrectionLevel,
     });
 
     const modules = qrData.modules;

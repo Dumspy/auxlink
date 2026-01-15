@@ -4,8 +4,13 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./qr/matrix": "./src/qr/matrix.ts",
+    "./qr/renderer": "./src/qr/renderer.ts",
     "./storage/tui": "./src/storage/tui.ts",
     "./storage/mobile": "./src/storage/mobile.ts"
+  },
+  "react-native": {
+    "./src/encryption.ts": "./src/encryption.native.ts"
   },
   "dependencies": {
     "qrcode": "^1.5.3"
@@ -13,5 +18,13 @@
   "devDependencies": {
     "@types/qrcode": "^1.5.5",
     "typescript": "^5.6.3"
+  },
+  "peerDependencies": {
+    "expo-crypto": "^15.0.0"
+  },
+  "peerDependenciesMeta": {
+    "expo-crypto": {
+      "optional": true
+    }
   }
 }

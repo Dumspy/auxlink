@@ -21,6 +21,7 @@
       "version": "1.0.0",
       "dependencies": {
         "@auxlink/api": "workspace:*",
+        "@auxlink/crypto": "workspace:*",
         "@auxlink/env": "workspace:*",
         "@better-auth/expo": "catalog:",
         "@expo/metro-runtime": "~6.1.2",
@@ -35,7 +36,9 @@
         "better-auth": "catalog:",
         "dotenv": "catalog:",
         "expo": "^54.0.23",
+        "expo-camera": "~17.0.4",
         "expo-constants": "~18.0.10",
+        "expo-crypto": "~15.0.2",
         "expo-device": "^8.0.10",
         "expo-font": "~14.0.9",
         "expo-haptics": "^15.0.7",
@@ -99,6 +102,7 @@
       "name": "tui",
       "dependencies": {
         "@auxlink/api": "workspace:*",
+        "@auxlink/crypto": "workspace:*",
         "@auxlink/env": "workspace:*",
         "@opentui/core": "^0.1.72",
         "@opentui/react": "^0.1.72",
@@ -163,6 +167,12 @@
         "@types/qrcode": "^1.5.5",
         "typescript": "^5.6.3",
       },
+      "peerDependencies": {
+        "expo-crypto": "^15.0.0",
+      },
+      "optionalPeers": [
+        "expo-crypto",
+      ],
     },
     "packages/db": {
       "name": "@auxlink/db",
@@ -1185,7 +1195,11 @@
 
     "expo-asset": ["expo-asset@12.0.12", "", { "dependencies": { "@expo/image-utils": "^0.8.8", "expo-constants": "~18.0.12" }, "peerDependencies": { "expo": "*", "react": "*", "react-native": "*" } }, "sha512-CsXFCQbx2fElSMn0lyTdRIyKlSXOal6ilLJd+yeZ6xaC7I9AICQgscY5nj0QcwgA+KYYCCEQEBndMsmj7drOWQ=="],
 
+    "expo-camera": ["expo-camera@17.0.10", "", { "dependencies": { "invariant": "^2.2.4" }, "peerDependencies": { "expo": "*", "react": "*", "react-native": "*", "react-native-web": "*" }, "optionalPeers": ["react-native-web"] }, "sha512-w1RBw83mAGVk4BPPwNrCZyFop0VLiVSRE3c2V9onWbdFwonpRhzmB4drygG8YOUTl1H3wQvALJHyMPTbgsK1Jg=="],
+
     "expo-constants": ["expo-constants@18.0.13", "", { "dependencies": { "@expo/config": "~12.0.13", "@expo/env": "~2.0.8" }, "peerDependencies": { "expo": "*", "react-native": "*" } }, "sha512-FnZn12E1dRYKDHlAdIyNFhBurKTS3F9CrfrBDJI5m3D7U17KBHMQ6JEfYlSj7LG7t+Ulr+IKaj58L1k5gBwTcQ=="],
+
+    "expo-crypto": ["expo-crypto@15.0.8", "", { "dependencies": { "base64-js": "^1.3.0" }, "peerDependencies": { "expo": "*" } }, "sha512-aF7A914TB66WIlTJvl5J6/itejfY78O7dq3ibvFltL9vnTALJ/7LYHvLT4fwmx9yUNS6ekLBtDGWivFWnj2Fcw=="],
 
     "expo-device": ["expo-device@8.0.10", "", { "dependencies": { "ua-parser-js": "^0.7.33" }, "peerDependencies": { "expo": "*" } }, "sha512-jd5BxjaF7382JkDMaC+P04aXXknB2UhWaVx5WiQKA05ugm/8GH5uaz9P9ckWdMKZGQVVEOC8MHaUADoT26KmFA=="],
 

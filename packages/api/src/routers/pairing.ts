@@ -151,14 +151,34 @@ export const pairingRouter = router({
         })
         .where(eq(device.id, mobileDeviceId));
 
-      // Create device pairing
-      const pairingId = randomUUID();
-      await db.insert(devicePairing).values({
-        id: pairingId,
-        mobileDeviceId,
-        tuiDeviceId: session.tuiDeviceId,
-        isActive: true,
+      // Check if pairing already exists
+      const existingPairing = await db.query.devicePairing.findFirst({
+        where: and(
+          eq(devicePairing.mobileDeviceId, mobileDeviceId),
+          eq(devicePairing.tuiDeviceId, session.tuiDeviceId)
+        ),
       });
+
+      // Create or update device pairing
+      if (existingPairing) {
+        // Reactivate existing pairing
+        await db
+          .update(devicePairing)
+          .set({
+            isActive: true,
+            pairedAt: new Date(),
+          })
+          .where(eq(devicePairing.id, existingPairing.id));
+      } else {
+        // Create new pairing
+        const pairingId = randomUUID();
+        await db.insert(devicePairing).values({
+          id: pairingId,
+          mobileDeviceId,
+          tuiDeviceId: session.tuiDeviceId,
+          isActive: true,
+        });
+      }
 
       // Update pairing session status
       await db
