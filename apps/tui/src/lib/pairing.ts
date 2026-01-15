@@ -77,6 +77,8 @@ export async function initiatePairing(
   const qrCode = renderQRForOpenTUI(matrix, {
     compact: true,  // Use half-height rendering
     padding: 1,     // Minimal padding
+    inverted: true, // Invert colors for easier scanning
+    border: true,   // Add solid block border
   });
 
   return {
