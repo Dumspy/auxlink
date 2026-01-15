@@ -1,4 +1,4 @@
-import * as SecureStore from "expo-secure-store";
+import { setItemAsync, getItemAsync, deleteItemAsync } from "expo-secure-store";
 
 const DEVICE_ID_KEY = "auxlink_device_id";
 
@@ -7,7 +7,7 @@ const DEVICE_ID_KEY = "auxlink_device_id";
  */
 export const storeDeviceId = async (deviceId: string): Promise<void> => {
   try {
-    await SecureStore.setItemAsync(DEVICE_ID_KEY, deviceId);
+    await setItemAsync(DEVICE_ID_KEY, deviceId);
   } catch (error) {
     console.error("[device-storage] Failed to store device ID:", error);
     throw error;
@@ -20,7 +20,7 @@ export const storeDeviceId = async (deviceId: string): Promise<void> => {
  */
 export const getDeviceId = async (): Promise<string | null> => {
   try {
-    return await SecureStore.getItemAsync(DEVICE_ID_KEY);
+    return await getItemAsync(DEVICE_ID_KEY);
   } catch (error) {
     console.error("[device-storage] Failed to retrieve device ID:", error);
     return null;
@@ -32,7 +32,7 @@ export const getDeviceId = async (): Promise<string | null> => {
  */
 export const clearDeviceId = async (): Promise<void> => {
   try {
-    await SecureStore.deleteItemAsync(DEVICE_ID_KEY);
+    await deleteItemAsync(DEVICE_ID_KEY);
   } catch (error) {
     console.error("[device-storage] Failed to clear device ID:", error);
     throw error;
