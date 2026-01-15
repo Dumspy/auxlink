@@ -32,6 +32,11 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
 
   // Handle navigation and keyboard shortcuts
   useEffect(() => {
+    if (screen !== "menu") {
+      // Don't register navigation handlers when not on menu screen
+      return;
+    }
+
     if (showLogoutConfirm) {
       // Logout confirmation navigation
       onNavigationChange({
@@ -100,7 +105,7 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
         }
       },
     });
-  }, [focusedItem, showHelp, showLogoutConfirm, logoutFocus, onNavigationChange]);
+  }, [screen, focusedItem, showHelp, showLogoutConfirm, logoutFocus, onNavigationChange]);
 
   useEffect(() => {
     async function loadUser() {

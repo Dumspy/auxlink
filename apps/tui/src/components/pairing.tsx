@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getDeviceId } from "@/lib/device-storage";
 import {
   initiatePairing,
@@ -23,67 +23,8 @@ export function Pairing({ onBack, onNavigationChange }: PairingProps) {
   const [buttonFocus, setButtonFocus] = useState<ButtonFocus>("cancel");
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
 
-  // Initialize pairing when component mounts
-  useEffect(() => {
-    async function startPairing() {
-      try {
-        setState({ status: "generating" });
-
-        const deviceId = await getDeviceId();
-        if (!deviceId) {
-          setState({ status: "error", error: "Device not registered" });
-          return;
-        }
-
-        // Initiate pairing and generate QR code
-        const { qrCode, sessionId, expiresAt } = await initiatePairing(deviceId);
-
-        setState({
-          status: "displaying",
-          qrCode,
-          sessionId,
-          expiresAt,
-        });
-
-        // Start polling for pairing completion
-        startPolling(sessionId, expiresAt);
-      } catch (error: any) {
-        setState({
-          status: "error",
-          error: error.message || "Failed to initiate pairing",
-        });
-      }
-    }
-
-    startPairing();
-  }, []);
-
-  // Update time remaining
-  useEffect(() => {
-    if (state.status !== "displaying" && state.status !== "polling") {
-      return;
-    }
-
-    if (!state.expiresAt) {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      const now = Date.now();
-      const remaining = Math.max(0, state.expiresAt!.getTime() - now);
-      setTimeRemaining(Math.ceil(remaining / 1000));
-
-      if (remaining === 0) {
-        setState({ status: "expired" });
-        clearInterval(interval);
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [state.status, state.expiresAt]);
-
   // Poll for pairing completion
-  function startPolling(sessionId: string, expiresAt: Date) {
+  const startPolling = useCallback((sessionId: string, expiresAt: Date) => {
     const pollInterval = setInterval(async () => {
       try {
         // Check if expired
@@ -112,9 +53,77 @@ export function Pairing({ onBack, onNavigationChange }: PairingProps) {
       }
     }, 2000); // Poll every 2 seconds
 
-    // Cleanup on unmount
+    // Return cleanup function
     return () => clearInterval(pollInterval);
-  }
+  }, []);
+
+  // Initialize pairing when component mounts
+  useEffect(() => {
+    let cleanup: (() => void) | undefined;
+
+    async function startPairing() {
+      try {
+        setState({ status: "generating" });
+
+        const deviceId = await getDeviceId();
+        if (!deviceId) {
+          setState({ status: "error", error: "Device not registered" });
+          return;
+        }
+
+        // Initiate pairing and generate QR code
+        const { qrCode, sessionId, expiresAt } = await initiatePairing(deviceId);
+
+        setState({
+          status: "displaying",
+          qrCode,
+          sessionId,
+          expiresAt,
+        });
+
+        // Start polling for pairing completion and store cleanup function
+        cleanup = startPolling(sessionId, expiresAt);
+      } catch (error: any) {
+        setState({
+          status: "error",
+          error: error.message || "Failed to initiate pairing",
+        });
+      }
+    }
+
+    startPairing();
+
+    // Cleanup on unmount
+    return () => {
+      if (cleanup) {
+        cleanup();
+      }
+    };
+  }, [startPolling]);
+
+  // Update time remaining
+  useEffect(() => {
+    if (state.status !== "displaying" && state.status !== "polling") {
+      return;
+    }
+
+    if (!state.expiresAt) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const remaining = Math.max(0, state.expiresAt!.getTime() - now);
+      setTimeRemaining(Math.ceil(remaining / 1000));
+
+      if (remaining === 0) {
+        setState({ status: "expired" });
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [state.status, state.expiresAt]);
 
   // Handle cancel action
   async function handleCancel() {
@@ -171,6 +180,18 @@ export function Pairing({ onBack, onNavigationChange }: PairingProps) {
       },
     });
   }, [state.status, onNavigationChange]);
+
+  // Cleanup effect - ensure navigation handlers are reset when component unmounts
+  useEffect(() => {
+    return () => {
+      // Reset navigation handlers to empty state when unmounting
+      onNavigationChange({
+        onArrowUp: () => {},
+        onArrowDown: () => {},
+        onKeyPress: () => {},
+      });
+    };
+  }, [onNavigationChange]);
 
   // Error state
   if (state.status === "error") {
