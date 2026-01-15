@@ -15,9 +15,8 @@ export const message = sqliteTable(
       .notNull()
       .references(() => device.id, { onDelete: "cascade" }),
 
-    // Encrypted content (Signal Protocol output)
+    // Encrypted content (RSA-OAEP encrypted)
     encryptedContent: text("encrypted_content").notNull(), // Base64
-    messageType: text("message_type", { enum: ["prekey", "message"] }).notNull(),
 
     // Message metadata (unencrypted for server routing)
     contentType: text("content_type").notNull().default("text"), // "text", "link", "file"

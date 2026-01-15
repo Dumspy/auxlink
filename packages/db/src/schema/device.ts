@@ -15,9 +15,8 @@ export const device = sqliteTable(
     // Auto-generated name
     name: text("name").notNull(), // e.g. "iPhone (iOS 17.2)", "Ubuntu Desktop"
 
-    // Signal Protocol Keys (nullable for now, populated in Phase 3)
-    identityKeyPublic: text("identity_key_public"), // Base64
-    signedPreKey: text("signed_pre_key"), // Base64
+    // RSA Encryption Key
+    publicKey: text("public_key"), // RSA-2048 public key in PEM format
 
     // Metadata
     lastSeenAt: integer("last_seen_at", { mode: "timestamp_ms" }),
