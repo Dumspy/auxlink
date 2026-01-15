@@ -8,7 +8,12 @@ import * as Device from "expo-device";
 import { Container } from "@/components/container";
 import { authClient } from "@/lib/auth-client";
 import { trpcClient } from "@/utils/trpc";
-import { getDeviceId, storeDeviceId } from "@/lib/device-storage";
+import { isTRPCNotFoundError } from "@auxlink/api/utils/error";
+import {
+  getDeviceId,
+  storeDeviceId,
+  clearDeviceId,
+} from "@/lib/device-storage";
 
 export default function Home() {
   const { data: session } = authClient.useSession();
@@ -22,20 +27,60 @@ export default function Home() {
       }
 
       try {
-        const storedDeviceId = await getDeviceId();
+        let storedDeviceId = await getDeviceId();
+        console.log("Stored Device ID:", storedDeviceId);
         const userAgent = `${Device.osName} ${Device.osVersion} (${Device.modelName})`;
 
         if (storedDeviceId) {
-          await trpcClient.device.updateLastSeen.mutate({ deviceId: storedDeviceId });
-        } else {
+          try {
+            // Try to update last seen with stored device ID
+            await trpcClient.device.updateLastSeen.mutate({
+              deviceId: storedDeviceId,
+            });
+          } catch (error) {
+            // If device not found, clear the invalid ID and re-register
+            console.log("[device-registration] Error structure:", JSON.stringify(error, null, 2));
+            console.log("[device-registration] Error type:", typeof error);
+            console.log("[device-registration] Is NOT_FOUND?", isTRPCNotFoundError(error));
+            
+            if (isTRPCNotFoundError(error)) {
+              console.warn(
+                "[device-registration drawer 1] Stored device not found, re-registering",
+              );
+              await clearDeviceId();
+              storedDeviceId = null;
+            } else {
+              // Other errors (network, etc.) - rethrow to outer catch
+              throw error;
+            }
+          }
+        }
+
+        // If no stored device (or was cleared due to NOT_FOUND), register new device
+        if (!storedDeviceId) {
           const device = await trpcClient.device.register.mutate({
             deviceType: "mobile",
             userAgent,
           });
+
+          console.log("Registered new device:", device);
+
+          if (!device?.id) {
+            throw new Error(
+              "Device registration failed: no device ID returned",
+            );
+          }
+
+          // Store the new device ID
           await storeDeviceId(device.id);
+
+          // Verify the device exists by immediately updating last seen
+          await trpcClient.device.updateLastSeen.mutate({
+            deviceId: device.id,
+          });
         }
       } catch (error) {
-        console.error("[device-registration] Silent failure:", error);
+        console.error("[device-registration drawer 2] Silent failure:", error);
       }
     };
 
@@ -62,19 +107,19 @@ export default function Home() {
             if (event.data?.code || (event as any).code) {
               return;
             }
-            
+
             const msg = event.data?.message;
-            
+
             if (!msg || !msg.senderDeviceId || !msg.encryptedContent) {
               return;
             }
-            
+
             // TODO: Handle received message (Phase 4 - add to message store)
           },
           onError(err) {
             console.error("[message-subscription] Error:", err);
           },
-        }
+        },
       );
 
       return () => {
@@ -99,7 +144,10 @@ export default function Home() {
           Aux<Text style={{ color: "#7C3AED" }}>Link</Text>
         </Text>
         <Text className="text-base text-muted">
-          Welcome, <Text className="font-semibold text-[#7C3AED]">{session.user.name}</Text>
+          Welcome,{" "}
+          <Text className="font-semibold text-[#7C3AED]">
+            {session.user.name}
+          </Text>
         </Text>
       </View>
 
@@ -114,8 +162,12 @@ export default function Home() {
           <Card variant="secondary" className="p-6">
             <View className="items-center gap-3">
               <Ionicons name="chatbubble-outline" size={32} color={iconColor} />
-              <Text className="text-xl font-semibold text-foreground">Messages</Text>
-              <Text className="text-sm text-muted text-center">View your encrypted messages</Text>
+              <Text className="text-xl font-semibold text-foreground">
+                Messages
+              </Text>
+              <Text className="text-sm text-muted text-center">
+                View your encrypted messages
+              </Text>
             </View>
           </Card>
         </Pressable>
@@ -129,8 +181,12 @@ export default function Home() {
           <Card variant="secondary" className="p-6">
             <View className="items-center gap-3">
               <Ionicons name="qr-code-outline" size={32} color={iconColor} />
-              <Text className="text-xl font-semibold text-foreground">Pair Device</Text>
-              <Text className="text-sm text-muted text-center">Connect to desktop app</Text>
+              <Text className="text-xl font-semibold text-foreground">
+                Pair Device
+              </Text>
+              <Text className="text-sm text-muted text-center">
+                Connect to desktop app
+              </Text>
             </View>
           </Card>
         </Pressable>
@@ -144,8 +200,12 @@ export default function Home() {
           <Card variant="secondary" className="p-6">
             <View className="items-center gap-3">
               <Ionicons name="settings-outline" size={32} color={iconColor} />
-              <Text className="text-xl font-semibold text-foreground">Settings</Text>
-              <Text className="text-sm text-muted text-center">Manage your account</Text>
+              <Text className="text-xl font-semibold text-foreground">
+                Settings
+              </Text>
+              <Text className="text-sm text-muted text-center">
+                Manage your account
+              </Text>
             </View>
           </Card>
         </Pressable>
@@ -153,5 +213,3 @@ export default function Home() {
     </Container>
   );
 }
-
-

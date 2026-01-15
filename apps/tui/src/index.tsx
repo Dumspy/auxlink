@@ -6,7 +6,8 @@ import { getSession } from "@/lib/auth-client";
 import { Auth } from "@/components/auth";
 import { Menu } from "@/components/menu";
 import { trpc } from "@/utils/trpc";
-import { getDeviceId, storeDeviceId } from "@/lib/device-storage";
+import { isTRPCNotFoundError } from "@auxlink/api/utils/error";
+import { getDeviceId, storeDeviceId, clearDeviceId } from "@/lib/device-storage";
 
 type Screen = "loading" | "auth" | "menu";
 
@@ -60,19 +61,42 @@ function App() {
           return;
         }
 
-        const storedDeviceId = await getDeviceId();
+        let storedDeviceId = await getDeviceId();
         const userAgent = `${platform()} ${release()} (${hostname()})`;
 
         if (storedDeviceId) {
-          await trpc.device.updateLastSeen.mutate({ deviceId: storedDeviceId });
-        } else {
+          try {
+            // Try to update last seen with stored device ID
+            await trpc.device.updateLastSeen.mutate({ deviceId: storedDeviceId });
+          } catch (error) {
+            // If device not found, clear the invalid ID and re-register
+            if (isTRPCNotFoundError(error)) {
+              console.warn("[device-registration] Stored device not found, re-registering");
+              await clearDeviceId();
+              storedDeviceId = null;
+            } else {
+              // Other errors (network, etc.) - rethrow to outer catch
+              throw error;
+            }
+          }
+        }
+
+        // If no stored device (or was cleared due to NOT_FOUND), register new device
+        if (!storedDeviceId) {
           const device = await trpc.device.register.mutate({
             deviceType: "tui",
             userAgent,
           });
-          if (device) {
-            await storeDeviceId(device.id);
+          
+          if (!device?.id) {
+            throw new Error("Device registration failed: no device ID returned");
           }
+          
+          // Store the new device ID
+          await storeDeviceId(device.id);
+          
+          // Verify the device exists by immediately updating last seen
+          await trpc.device.updateLastSeen.mutate({ deviceId: device.id });
         }
       } catch (error) {
         console.error("[device-registration] Silent failure:", error);
