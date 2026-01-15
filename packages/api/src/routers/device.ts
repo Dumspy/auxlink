@@ -15,13 +15,13 @@ export const deviceRouter = router({
       z.object({
         deviceType: z.enum(["mobile", "tui"]),
         userAgent: z.string().optional(),
-        identityKeyPublic: z.string().optional(),
+        publicKey: z.string().optional(),
         // Optional: provide existing device ID to update instead of create
         deviceId: z.string().uuid().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { deviceType, userAgent, identityKeyPublic, deviceId } = input;
+      const { deviceType, userAgent, publicKey, deviceId } = input;
       const userId = ctx.session.user.id;
 
       // If deviceId provided, update existing device
@@ -38,12 +38,12 @@ export const deviceRouter = router({
           });
         }
 
-        // Update lastSeenAt and optionally identityKeyPublic
+        // Update lastSeenAt and optionally publicKey
         const [updatedDevice] = await db
           .update(device)
           .set({
             lastSeenAt: new Date(),
-            ...(identityKeyPublic && { identityKeyPublic }),
+            ...(publicKey && { publicKey }),
           })
           .where(eq(device.id, deviceId))
           .returning();
@@ -62,7 +62,7 @@ export const deviceRouter = router({
           userId,
           deviceType,
           name,
-          identityKeyPublic: identityKeyPublic || null,
+          publicKey: publicKey || null,
           lastSeenAt: new Date(),
         })
         .returning();

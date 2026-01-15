@@ -1,0 +1,17 @@
+{
+  "name": "@auxlink/crypto",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./storage/tui": "./src/storage/tui.ts",
+    "./storage/mobile": "./src/storage/mobile.ts"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.3"
+  },
+  "devDependencies": {
+    "@types/qrcode": "^1.5.5",
+    "typescript": "^5.6.3"
+  }
+}

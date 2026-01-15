@@ -1,7 +1,7 @@
 import { protectedProcedure, publicProcedure, router } from "../index";
 import { deviceRouter } from "./device";
 import { messageRouter } from "./message";
-import { testRouter } from "./test"; // WARNING: Remove before production
+import { pairingRouter } from "./pairing";
 
 export const appRouter = router({
   healthCheck: publicProcedure.query(() => {
@@ -15,6 +15,6 @@ export const appRouter = router({
   }),
   device: deviceRouter,
   message: messageRouter,
-  test: testRouter, // WARNING: Development only - remove before production
+  pairing: pairingRouter,
 });
 export type AppRouter = typeof appRouter;

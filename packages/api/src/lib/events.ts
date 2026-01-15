@@ -20,7 +20,6 @@ export interface MessageReceivedEvent {
     senderDeviceId: string;
     recipientDeviceId: string;
     encryptedContent: string;
-    messageType: "prekey" | "message";
     contentType: string;
     sentAt: Date;
   };
@@ -32,6 +31,16 @@ export interface MessageStatusUpdatedEvent {
   messageId: string;
   status: "delivered" | "read";
   timestamp: Date;
+}
+
+export interface PairingCompletedEvent {
+  type: typeof EventTypes.PAIRING_COMPLETED;
+  deviceId: string;
+  mobileDevice: {
+    id: string;
+    name: string;
+    publicKey: string | null;
+  };
 }
 
 export interface TestPingEvent {
@@ -49,5 +58,6 @@ export interface TestEchoEvent {
 export type AppEvent =
   | MessageReceivedEvent
   | MessageStatusUpdatedEvent
+  | PairingCompletedEvent
   | TestPingEvent
   | TestEchoEvent;

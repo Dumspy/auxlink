@@ -92,7 +92,6 @@ export const messageRouter = router({
         senderDeviceId: z.string(),
         recipientDeviceId: z.string(),
         encryptedContent: z.string(),
-        messageType: z.enum(["prekey", "message"]),
         contentType: z.string().default("text"),
       }),
     )
@@ -121,7 +120,6 @@ export const messageRouter = router({
           senderDeviceId: input.senderDeviceId,
           recipientDeviceId: input.recipientDeviceId,
           encryptedContent: input.encryptedContent,
-          messageType: input.messageType,
           contentType: input.contentType,
           status: "sent",
           sentAt: new Date(),
