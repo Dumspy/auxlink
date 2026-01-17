@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { Card, useThemeColor } from "heroui-native";
 import { useEffect, useState, useCallback } from "react";
 import { Text, View, Pressable, FlatList, ActivityIndicator, RefreshControl } from "react-native";
+import { useFocusEffect } from "expo-router";
 
 import { Container } from "@/components/container";
 import { authClient } from "@/lib/auth-client";
@@ -69,11 +70,13 @@ export default function MessagesListScreen() {
     }
   };
 
-  useEffect(() => {
-    if (session?.user) {
-      loadConversations();
-    }
-  }, [session?.user]);
+  useFocusEffect(
+    useCallback(() => {
+      if (session?.user) {
+        loadConversations();
+      }
+    }, [session?.user])
+  );
 
   const onRefresh = useCallback(() => {
     loadConversations();
