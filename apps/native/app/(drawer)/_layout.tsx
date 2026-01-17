@@ -19,6 +19,7 @@ function DrawerLayout() {
           color: themeColorForeground,
         },
         drawerStyle: { backgroundColor: themeColorBackground },
+        sceneStyle: { backgroundColor: themeColorBackground },
       }}
     >
       <Drawer.Screen
@@ -40,7 +41,7 @@ function DrawerLayout() {
       <Drawer.Screen
         name="messages"
         options={{
-          headerTitle: "Messages",
+          headerShown: false,
           drawerLabel: ({ color, focused }) => (
             <Text style={{ color: focused ? color : themeColorForeground }}>Messages</Text>
           ),

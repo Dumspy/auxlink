@@ -4,7 +4,7 @@ polyfillWebCrypto();
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
-import { HeroUINativeProvider } from "heroui-native";
+import { HeroUINativeProvider, useThemeColor } from "heroui-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 
@@ -16,8 +16,10 @@ export const unstable_settings = {
 };
 
 function StackLayout() {
+  const themeColorBackground = useThemeColor("background");
+
   return (
-    <Stack screenOptions={{}}>
+    <Stack screenOptions={{ contentStyle: { backgroundColor: themeColorBackground } }}>
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
       <Stack.Screen name="modal" options={{ title: "Modal", presentation: "modal" }} />

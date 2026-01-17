@@ -1,9 +1,9 @@
 import { Redirect, router } from "expo-router";
-import { Button, ErrorView, Spinner, TextField } from "heroui-native";
+import { Button, ErrorView, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useState } from "react";
-import { Text, View, ScrollView, Pressable, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Text, View, Pressable, StyleSheet } from "react-native";
 
+import { Container } from "@/components/container";
 import { authClient } from "@/lib/auth-client";
 import { queryClient } from "@/utils/trpc";
 
@@ -48,13 +48,18 @@ export default function Login() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+    <Container edges={["top", "bottom"]} scrollable={true}>
+      <View style={styles.scrollContent}>
         <View className="mb-8">
-          <Text className="text-3xl font-bold mb-2 text-foreground" style={{ letterSpacing: -0.5 }}>
+          <Text
+            className="text-3xl font-bold mb-2 text-foreground"
+            style={{ letterSpacing: -0.5 }}
+          >
             Welcome back
           </Text>
-          <Text className="text-base text-muted">Sign in to your AuxLink account</Text>
+          <Text className="text-base text-muted">
+            Sign in to your AuxLink account
+          </Text>
         </View>
 
         <View className="flex-1">
@@ -103,12 +108,16 @@ export default function Login() {
           <View className="flex-row justify-center items-center mt-6">
             <Text className="text-sm text-muted">Don't have an account? </Text>
             <Pressable onPress={() => router.push("/(auth)/signup" as any)}>
-              <Text style={{ fontSize: 14, fontWeight: "600", color: "#7C3AED" }}>Sign up</Text>
+              <Text
+                style={{ fontSize: 14, fontWeight: "600", color: "#7C3AED" }}
+              >
+                Sign up
+              </Text>
             </Pressable>
           </View>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+    </Container>
   );
 }
 

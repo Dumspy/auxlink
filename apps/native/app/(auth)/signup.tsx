@@ -1,9 +1,9 @@
 import { Redirect, router } from "expo-router";
-import { Button, ErrorView, Spinner, TextField } from "heroui-native";
+import { Button, ErrorView, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useState } from "react";
-import { Text, View, ScrollView, Pressable, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Text, View, Pressable, StyleSheet } from "react-native";
 
+import { Container } from "@/components/container";
 import { authClient } from "@/lib/auth-client";
 import { queryClient } from "@/utils/trpc";
 
@@ -50,13 +50,18 @@ export default function SignUp() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+    <Container edges={["top", "bottom"]} scrollable={true}>
+      <View style={styles.scrollContent}>
         <View className="mb-8">
-          <Text className="text-3xl font-bold mb-2 text-foreground" style={{ letterSpacing: -0.5 }}>
+          <Text
+            className="text-3xl font-bold mb-2 text-foreground"
+            style={{ letterSpacing: -0.5 }}
+          >
             Create an account
           </Text>
-          <Text className="text-base text-muted">Get started with AuxLink today</Text>
+          <Text className="text-base text-muted">
+            Get started with AuxLink today
+          </Text>
         </View>
 
         <View className="flex-1">
@@ -107,7 +112,9 @@ export default function SignUp() {
               {isLoading ? (
                 <Spinner size="sm" color="default" />
               ) : (
-                <Button.Label style={{ color: "#FFFFFF" }}>Create Account</Button.Label>
+                <Button.Label style={{ color: "#FFFFFF" }}>
+                  Create Account
+                </Button.Label>
               )}
             </Button>
           </View>
@@ -115,12 +122,16 @@ export default function SignUp() {
           <View className="flex-row justify-center items-center mt-6">
             <Text className="text-sm text-muted">Already have an account? </Text>
             <Pressable onPress={() => router.push("/(auth)/login" as any)}>
-              <Text style={{ fontSize: 14, fontWeight: "600", color: "#7C3AED" }}>Sign in</Text>
+              <Text
+                style={{ fontSize: 14, fontWeight: "600", color: "#7C3AED" }}
+              >
+                Sign in
+              </Text>
             </Pressable>
           </View>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+    </Container>
   );
 }
 

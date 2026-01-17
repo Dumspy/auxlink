@@ -1,8 +1,8 @@
 import { Redirect, router } from "expo-router";
-import { Button, Card } from "heroui-native";
+import { Button, Card, useThemeColor } from "heroui-native";
 import { Text, View, Alert, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
+import { Container } from "@/components/container";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { authClient } from "@/lib/auth-client";
 import { queryClient } from "@/utils/trpc";
@@ -33,8 +33,8 @@ export default function Settings() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
-      <ScrollView contentContainerClassName="flex-grow px-6 pt-4 pb-6">
+    <Container scrollable={true}>
+      <View className="px-6 pt-4 pb-6">
         <View className="mb-6">
           <Text className="text-3xl font-bold text-foreground">Settings</Text>
         </View>
@@ -75,7 +75,7 @@ export default function Settings() {
           <Text className="text-xs text-muted">AuxLink v0.1.0</Text>
           <Text className="text-xs text-muted">End-to-end encrypted messaging</Text>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+    </Container>
   );
 }

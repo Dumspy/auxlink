@@ -3,8 +3,8 @@ import { router } from "expo-router";
 import { Button } from "heroui-native";
 import { useState, useEffect, useRef } from "react";
 import { Text, View, StyleSheet, Alert } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
+import { Container } from "@/components/container";
 import { getDeviceId } from "@/lib/device-storage";
 import { completePairing, parseQRPayload } from "@/lib/pairing";
 
@@ -35,23 +35,42 @@ export default function PairingScanner() {
     try {
       // Parse QR code data
       const qrData = parseQRPayload(data);
-      
+
       if (!qrData) {
-      Alert.alert(
-        "Invalid QR Code",
-        "This QR code is not valid for pairing. Please scan the QR code from your AuxLink desktop app.",
-        [
-          {
-            text: "Try Again",
-            onPress: () => {
-              isScanningRef.current = false;
-              setScanned(false);
-              setIsProcessing(false);
+        Alert.alert(
+          "Invalid QR Code",
+          "This QR code is not valid for pairing. Please scan the QR code from your AuxLink desktop app.",
+          [
+            {
+              text: "Try Again",
+              onPress: () => {
+                isScanningRef.current = false;
+                setScanned(false);
+                setIsProcessing(false);
+              },
             },
-          },
+            {
+              text: "Cancel",
+              style: "cancel",
+              onPress: () => {
+                if (router.canGoBack()) {
+                  router.back();
+                } else {
+                  router.replace("/(drawer)" as any);
+                }
+              },
+            },
+          ],
+        );
+        return;
+      }
+
+      // Get device ID
+      const deviceId = await getDeviceId();
+      if (!deviceId) {
+        Alert.alert("Error", "Device not registered. Please restart the app.", [
           {
-            text: "Cancel",
-            style: "cancel",
+            text: "OK",
             onPress: () => {
               if (router.canGoBack()) {
                 router.back();
@@ -60,25 +79,7 @@ export default function PairingScanner() {
               }
             },
           },
-        ]
-      );
-        return;
-      }
-
-      // Get device ID
-      const deviceId = await getDeviceId();
-      if (!deviceId) {
-      Alert.alert(
-        "Error",
-        "Device not registered. Please restart the app.",
-        [{ text: "OK", onPress: () => {
-          if (router.canGoBack()) {
-            router.back();
-          } else {
-            router.replace("/(drawer)" as any);
-          }
-        }}]
-      );
+        ]);
         return;
       }
 
@@ -100,62 +101,64 @@ export default function PairingScanner() {
               }
             },
           },
-        ]
+        ],
       );
     } catch (error: any) {
       console.error("[pairing] Error:", error);
-      
+
       let errorMessage = "Failed to complete pairing. Please try again.";
-      
+
       if (error.message?.includes("expired")) {
-        errorMessage = "QR code has expired. Please generate a new one on your desktop app.";
+        errorMessage =
+          "QR code has expired. Please generate a new one on your desktop app.";
       } else if (error.message?.includes("completed")) {
-        errorMessage = "This QR code has already been used. Please generate a new one.";
+        errorMessage =
+          "This QR code has already been used. Please generate a new one.";
       }
 
-      Alert.alert(
-        "Pairing Failed",
-        errorMessage,
-        [
-          {
-            text: "Try Again",
-            onPress: () => {
-              isScanningRef.current = false;
-              setScanned(false);
-              setIsProcessing(false);
-            },
+      Alert.alert("Pairing Failed", errorMessage, [
+        {
+          text: "Try Again",
+          onPress: () => {
+            isScanningRef.current = false;
+            setScanned(false);
+            setIsProcessing(false);
           },
-          {
-            text: "Cancel",
-            style: "cancel",
-            onPress: () => {
-              if (router.canGoBack()) {
-                router.back();
-              } else {
-                router.replace("/(drawer)" as any);
-              }
-            },
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+          onPress: () => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace("/(drawer)" as any);
+            }
           },
-        ]
-      );
+        },
+      ]);
     }
   };
 
   if (hasPermission === null) {
     return (
-      <SafeAreaView style={styles.container}>
+      <Container edges={["top", "bottom"]} scrollable={false}>
         <View style={styles.centered}>
-          <Text className="text-base text-foreground">Requesting camera permission...</Text>
+          <Text className="text-base text-foreground">
+            Requesting camera permission...
+          </Text>
         </View>
-      </SafeAreaView>
+      </Container>
     );
   }
 
   if (hasPermission === false) {
     return (
-      <SafeAreaView style={styles.container}>
+      <Container edges={["top", "bottom"]} scrollable={false}>
         <View style={styles.centered}>
-          <Text className="text-xl font-bold mb-4 text-foreground">Camera Access Required</Text>
+          <Text className="text-xl font-bold mb-4 text-foreground">
+            Camera Access Required
+          </Text>
           <Text className="text-base text-muted text-center mb-6">
             Please allow camera access to scan QR codes for device pairing.
           </Text>
@@ -172,15 +175,17 @@ export default function PairingScanner() {
             <Button.Label style={{ color: "#FFFFFF" }}>Go Back</Button.Label>
           </Button>
         </View>
-      </SafeAreaView>
+      </Container>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <Container edges={["top", "bottom"]} scrollable={false}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text className="text-2xl font-bold mb-2 text-foreground">Pair Device</Text>
+          <Text className="text-2xl font-bold mb-2 text-foreground">
+            Pair Device
+          </Text>
           <Text className="text-base text-muted text-center">
             Scan the QR code from your desktop app
           </Text>
@@ -202,7 +207,9 @@ export default function PairingScanner() {
 
         {isProcessing && (
           <View style={styles.processingContainer}>
-            <Text className="text-base text-foreground">Processing pairing...</Text>
+            <Text className="text-base text-foreground">
+              Processing pairing...
+            </Text>
           </View>
         )}
 
@@ -226,14 +233,11 @@ export default function PairingScanner() {
           </View>
         )}
       </View>
-    </SafeAreaView>
+    </Container>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   centered: {
     flex: 1,
     justifyContent: "center",
