@@ -356,6 +356,7 @@ export default function ChatScreen() {
                   editable={!sending}
                   onSubmitEditing={handleSend}
                   blurOnSubmit={false}
+                  accessibilityLabel="Message input"
                 />
               </View>
               <Pressable
@@ -366,6 +367,9 @@ export default function ChatScreen() {
                     ? "bg-[#7C3AED]"
                     : "bg-gray-300 dark:bg-gray-700"
                 }`}
+                accessibilityLabel="Send message"
+                accessibilityRole="button"
+                accessibilityState={{ disabled: !inputText.trim() || sending }}
               >
                 {sending ? (
                   <ActivityIndicator size="small" color="white" />

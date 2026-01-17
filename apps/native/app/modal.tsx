@@ -25,7 +25,13 @@ function Modal() {
               This is an example modal screen for dialogs and confirmations.
             </Text>
           </View>
-          <Button onPress={handleClose} className="w-full" size="sm">
+          <Button 
+            onPress={handleClose} 
+            className="w-full" 
+            size="sm"
+            accessibilityLabel="Close, close this modal"
+            accessibilityRole="button"
+          >
             <Button.Label>Close</Button.Label>
           </Button>
         </Surface>

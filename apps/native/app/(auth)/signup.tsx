@@ -77,6 +77,7 @@ export default function SignUp() {
                 onChangeText={setName}
                 placeholder="John Doe"
                 editable={!isLoading}
+                accessibilityLabel="Name input"
               />
             </TextField>
 
@@ -89,6 +90,7 @@ export default function SignUp() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 editable={!isLoading}
+                accessibilityLabel="Email address input"
               />
             </TextField>
 
@@ -100,6 +102,7 @@ export default function SignUp() {
                 placeholder="••••••••"
                 secureTextEntry
                 editable={!isLoading}
+                accessibilityLabel="Password input"
               />
             </TextField>
 
@@ -108,6 +111,9 @@ export default function SignUp() {
               isDisabled={isLoading}
               className="w-full mt-2"
               style={{ backgroundColor: "#7C3AED" }}
+              accessibilityLabel="Create Account, sign up for a new account"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: isLoading }}
             >
               {isLoading ? (
                 <Spinner size="sm" color="default" />
@@ -121,7 +127,11 @@ export default function SignUp() {
 
           <View className="flex-row justify-center items-center mt-6">
             <Text className="text-sm text-muted">Already have an account? </Text>
-            <Pressable onPress={() => router.push("/(auth)/login" as any)}>
+            <Pressable 
+              onPress={() => router.push("/(auth)/login" as any)}
+              accessibilityLabel="Sign in, go to login page"
+              accessibilityRole="link"
+            >
               <Text
                 style={{ fontSize: 14, fontWeight: "600", color: "#7C3AED" }}
               >

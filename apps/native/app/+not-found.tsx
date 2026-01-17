@@ -17,7 +17,13 @@ export default function NotFoundScreen() {
               The page you're looking for doesn't exist.
             </Text>
             <Link href="/" asChild>
-              <Button size="sm">Go Home</Button>
+              <Button 
+                size="sm"
+                accessibilityLabel="Go Home, return to the home screen"
+                accessibilityRole="button"
+              >
+                Go Home
+              </Button>
             </Link>
           </Surface>
         </View>

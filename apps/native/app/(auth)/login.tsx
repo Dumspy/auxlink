@@ -77,6 +77,8 @@ export default function Login() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 editable={!isLoading}
+                accessibilityLabel="Email address input"
+
               />
             </TextField>
 
@@ -88,6 +90,7 @@ export default function Login() {
                 placeholder="••••••••"
                 secureTextEntry
                 editable={!isLoading}
+                accessibilityLabel="Password input"
               />
             </TextField>
 
@@ -96,6 +99,9 @@ export default function Login() {
               isDisabled={isLoading}
               className="w-full mt-2"
               style={{ backgroundColor: "#7C3AED" }}
+              accessibilityLabel="Sign In, sign in to your account"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: isLoading }}
             >
               {isLoading ? (
                 <Spinner size="sm" color="default" />
@@ -107,7 +113,11 @@ export default function Login() {
 
           <View className="flex-row justify-center items-center mt-6">
             <Text className="text-sm text-muted">Don't have an account? </Text>
-            <Pressable onPress={() => router.push("/(auth)/signup" as any)}>
+            <Pressable 
+              onPress={() => router.push("/(auth)/signup" as any)}
+              accessibilityLabel="Sign up, go to create account page"
+              accessibilityRole="link"
+            >
               <Text
                 style={{ fontSize: 14, fontWeight: "600", color: "#7C3AED" }}
               >

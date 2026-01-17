@@ -105,6 +105,8 @@ export default function MessagesListScreen() {
           params: { deviceId: item.deviceId, deviceName: item.deviceName },
         } as any);
       }}
+      accessibilityLabel={`Conversation with ${item.deviceName}, ${item.unreadCount > 0 ? item.unreadCount + ' unread messages' : 'no unread messages'}`}
+      accessibilityRole="button"
     >
       <Card variant="secondary" className="p-4">
         <View className="flex-row items-center justify-between">
@@ -170,6 +172,8 @@ export default function MessagesListScreen() {
             onPress={() => {
               router.push("/(drawer)/pairing" as any);
             }}
+            accessibilityLabel="Pair Device, connect a new device"
+            accessibilityRole="button"
           >
             <Card variant="secondary" className="px-6 py-3">
               <Text className="text-[#7C3AED] font-semibold">Pair Device</Text>

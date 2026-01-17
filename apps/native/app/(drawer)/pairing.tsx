@@ -171,6 +171,8 @@ export default function PairingScanner() {
               }
             }}
             style={{ backgroundColor: "#7C3AED" }}
+            accessibilityLabel="Go Back, return to previous screen"
+            accessibilityRole="button"
           >
             <Button.Label style={{ color: "#FFFFFF" }}>Go Back</Button.Label>
           </Button>
@@ -227,6 +229,8 @@ export default function PairingScanner() {
                   router.replace("/(drawer)" as any);
                 }
               }}
+              accessibilityLabel="Cancel, return to previous screen"
+              accessibilityRole="button"
             >
               <Button.Label>Cancel</Button.Label>
             </Button>

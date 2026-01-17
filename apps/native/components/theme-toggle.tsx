@@ -20,6 +20,8 @@ export function ThemeToggle() {
         toggleTheme();
       }}
       className="px-2.5"
+      accessibilityLabel={isLight ? "Switch to dark theme" : "Switch to light theme"}
+      accessibilityRole="button"
     >
       {isLight ? (
         <Animated.View key="moon" entering={ZoomIn} exiting={FadeOut}>

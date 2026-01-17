@@ -209,6 +209,8 @@ export default function Home() {
           onPress={() => {
             router.push("/(drawer)/messages" as any);
           }}
+          accessibilityLabel="Messages, view your encrypted messages"
+          accessibilityRole="button"
         >
           <Card variant="secondary" className="p-6">
             <View className="items-center gap-3">
@@ -228,6 +230,8 @@ export default function Home() {
           onPress={() => {
             router.push("/(drawer)/pairing" as any);
           }}
+          accessibilityLabel="Pair Device, connect to desktop app"
+          accessibilityRole="button"
         >
           <Card variant="secondary" className="p-6">
             <View className="items-center gap-3">
@@ -247,6 +251,8 @@ export default function Home() {
           onPress={() => {
             router.push("/(drawer)/settings" as any);
           }}
+          accessibilityLabel="Settings, manage your account"
+          accessibilityRole="button"
         >
           <Card variant="secondary" className="p-6">
             <View className="items-center gap-3">

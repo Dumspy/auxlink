@@ -46,6 +46,8 @@ export default function Welcome() {
             onPress={() => router.push("/(auth)/login" as any)}
             className="w-full"
             style={{ backgroundColor: "#7C3AED" }}
+            accessibilityLabel="Get Started, sign in to your account"
+            accessibilityRole="button"
           >
             <Button.Label style={{ color: "#FFFFFF" }}>Get Started</Button.Label>
           </Button>
@@ -54,13 +56,19 @@ export default function Welcome() {
             variant="secondary"
             onPress={() => router.push("/(auth)/signup" as any)}
             className="w-full"
+            accessibilityLabel="Create Account, sign up for a new account"
+            accessibilityRole="button"
           >
             <Button.Label>Create Account</Button.Label>
           </Button>
 
           <View className="flex-row justify-center items-center mt-2">
             <Text className="text-sm text-muted">Already have an account? </Text>
-            <Pressable onPress={() => router.push("/(auth)/login" as any)}>
+            <Pressable 
+              onPress={() => router.push("/(auth)/login" as any)}
+              accessibilityLabel="Sign in, go to login page"
+              accessibilityRole="link"
+            >
               <Text
                 style={{ fontSize: 14, fontWeight: "600", color: "#7C3AED" }}
               >

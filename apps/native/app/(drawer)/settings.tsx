@@ -66,6 +66,8 @@ export default function Settings() {
           onPress={handleLogout}
           className="w-full mt-2"
           style={{ backgroundColor: "#EF4444" }}
+          accessibilityLabel="Logout, sign out of your account"
+          accessibilityRole="button"
         >
           <Button.Label style={{ color: "#FFFFFF" }}>Logout</Button.Label>
         </Button>
