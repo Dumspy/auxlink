@@ -115,8 +115,15 @@ export default function ChatScreen() {
                 // Store this message ID for future reconnections
                 await SecureStore.setItemAsync(`lastMessageId_${deviceId}`, msg.id);
 
-                // Reload messages to include the new one
-                loadMessages();
+                // Add message to state directly instead of reloading
+                const newMessage = createLocalMessageFromReceived(
+                  msg.id,
+                  msg.senderDeviceId,
+                  content,
+                  msg.encryptedContent,
+                  new Date(msg.sentAt).getTime()
+                );
+                addMessageToState(newMessage);
 
                 // Send delivery receipt
                 trpcClient.message.updateStatus.mutate({
@@ -130,9 +137,10 @@ export default function ChatScreen() {
             else if (eventType === "message:status_updated") {
               const { messageId, status } = event.data as any;
               if (messageId) {
-                // Update local message status
+                // Update local message status in database
                 localDb.updateMessageStatus(messageId, status).then(() => {
-                  loadMessages(); // Refresh to show updated status
+                  // Update message status in state directly instead of reloading
+                  updateMessageStatusInState(messageId, status);
                 });
               }
             }
@@ -168,15 +176,18 @@ export default function ChatScreen() {
     setInputText(""); // Clear input immediately
 
     try {
-      await sendEncryptedMessage(deviceId, recipientDeviceId, messageContent);
+      const result = await sendEncryptedMessage(deviceId, recipientDeviceId, messageContent);
+
+      // Get the saved message from database to add to state immediately
+      const savedMessage = await localDb.getMessage(result.id);
+      if (savedMessage) {
+        addMessageToState(savedMessage);
+      }
 
       // Success feedback
       if (Platform.OS !== "web") {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
-
-      // Reload messages to show the sent message
-      await loadMessages();
 
       // Scroll to bottom
       setTimeout(() => {
@@ -190,6 +201,59 @@ export default function ChatScreen() {
       setSending(false);
     }
   };
+
+  // Helper functions for optimized state management
+  const addMessageToState = (newMessage: LocalMessage) => {
+    setMessages(prev => {
+      // Check if message already exists to avoid duplicates
+      if (prev.some(msg => msg.id === newMessage.id)) {
+        return prev;
+      }
+      return [...prev, newMessage];
+    });
+  };
+
+  const updateMessageStatusInState = (messageId: string, newStatus: "pending" | "sent" | "delivered" | "read") => {
+    setMessages(prev => 
+      prev.map(msg => 
+        msg.id === messageId ? { ...msg, status: newStatus } : msg
+      )
+    );
+  };
+
+  const createLocalMessageFromReceived = (
+    messageId: string,
+    senderDeviceId: string,
+    content: string,
+    encryptedContent: string,
+    timestamp: number
+  ): LocalMessage => ({
+    id: messageId,
+    conversationId: senderDeviceId,
+    content,
+    encryptedContent,
+    isSent: false,
+    status: "delivered",
+    timestamp,
+    contentType: "text",
+  });
+
+  const createLocalMessageFromSent = (
+    messageId: string,
+    content: string,
+    encryptedContent: string,
+    status: "pending" | "sent" | "delivered" | "read",
+    timestamp: number
+  ): LocalMessage => ({
+    id: messageId,
+    conversationId: recipientDeviceId,
+    content,
+    encryptedContent,
+    isSent: true,
+    status,
+    timestamp,
+    contentType: "text",
+  });
 
   const formatTimestamp = (timestamp: number): string => {
     const date = new Date(timestamp);
