@@ -76,6 +76,8 @@ export default function SignUp() {
                 value={name}
                 onChangeText={setName}
                 placeholder="John Doe"
+                autoComplete="name"
+                textContentType="name"
                 editable={!isLoading}
                 accessibilityLabel="Name input"
               />
@@ -89,6 +91,8 @@ export default function SignUp() {
                 placeholder="email@example.com"
                 keyboardType="email-address"
                 autoCapitalize="none"
+                autoComplete="email"
+                textContentType="emailAddress"
                 editable={!isLoading}
                 accessibilityLabel="Email address input"
               />
@@ -101,6 +105,8 @@ export default function SignUp() {
                 onChangeText={setPassword}
                 placeholder="••••••••"
                 secureTextEntry
+                autoComplete="new-password"
+                textContentType="newPassword"
                 editable={!isLoading}
                 accessibilityLabel="Password input"
               />

@@ -76,9 +76,10 @@ export default function Login() {
                 placeholder="email@example.com"
                 keyboardType="email-address"
                 autoCapitalize="none"
+                autoComplete="email"
+                textContentType="emailAddress"
                 editable={!isLoading}
                 accessibilityLabel="Email address input"
-
               />
             </TextField>
 
@@ -89,6 +90,8 @@ export default function Login() {
                 onChangeText={setPassword}
                 placeholder="••••••••"
                 secureTextEntry
+                autoComplete="current-password"
+                textContentType="password"
                 editable={!isLoading}
                 accessibilityLabel="Password input"
               />
