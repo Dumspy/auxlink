@@ -1,7 +1,7 @@
 import { CameraView, Camera, BarcodeScanningResult } from "expo-camera";
 import { router } from "expo-router";
 import { Button } from "heroui-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Text, View, StyleSheet, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -12,6 +12,7 @@ export default function PairingScanner() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const isScanningRef = useRef(false);
 
   useEffect(() => {
     const getCameraPermissions = async () => {
@@ -23,10 +24,11 @@ export default function PairingScanner() {
   }, []);
 
   const handleBarCodeScanned = async ({ data }: BarcodeScanningResult) => {
-    if (scanned || isProcessing) {
+    if (scanned || isProcessing || isScanningRef.current) {
       return;
     }
 
+    isScanningRef.current = true;
     setScanned(true);
     setIsProcessing(true);
 
@@ -42,6 +44,7 @@ export default function PairingScanner() {
           {
             text: "Try Again",
             onPress: () => {
+              isScanningRef.current = false;
               setScanned(false);
               setIsProcessing(false);
             },
@@ -117,6 +120,7 @@ export default function PairingScanner() {
           {
             text: "Try Again",
             onPress: () => {
+              isScanningRef.current = false;
               setScanned(false);
               setIsProcessing(false);
             },
