@@ -81,6 +81,8 @@ export const messageRouter = router({
       })) {
         if (event.type === EventTypes.MESSAGE_RECEIVED) {
           yield tracked(event.message.id, event);
+        } else if (event.type === EventTypes.MESSAGE_STATUS_UPDATED) {
+          yield tracked(event.messageId, event);
         }
       }
     }),
@@ -241,6 +243,69 @@ export const messageRouter = router({
       });
 
       return updatedMessage;
+    }),
+
+  // Mark all messages in a conversation as read
+  markConversationRead: protectedProcedure
+    .input(
+      z.object({
+        deviceId: z.string(), // Local device ID
+        conversationId: z.string(), // Other party's device ID
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.session.user.id;
+
+      // Verify device belongs to user
+      const userDevice = await db
+        .select()
+        .from(device)
+        .where(and(eq(device.id, input.deviceId), eq(device.userId, userId)))
+        .get();
+
+      if (!userDevice) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Device not found or access denied",
+        });
+      }
+
+      // Find all unread messages for this recipient from this sender
+      const unreadMessages = await db
+        .select()
+        .from(message)
+        .where(
+          and(
+            eq(message.recipientDeviceId, input.deviceId),
+            eq(message.senderDeviceId, input.conversationId),
+            or(eq(message.status, "sent"), eq(message.status, "delivered")),
+          ),
+        )
+        .all();
+
+      const timestamp = new Date();
+      
+      // Update each message
+      for (const msg of unreadMessages) {
+        await db
+          .update(message)
+          .set({
+            status: "read",
+            readAt: timestamp,
+          })
+          .where(eq(message.id, msg.id));
+
+        // Emit status update to sender device
+        emitAppEvent(msg.senderDeviceId, {
+          type: EventTypes.MESSAGE_STATUS_UPDATED,
+          deviceId: msg.senderDeviceId,
+          messageId: msg.id,
+          status: "read",
+          timestamp,
+        });
+      }
+
+      return { count: unreadMessages.length };
     }),
 
   // Get pending messages (for mobile foreground sync - Phase 5)

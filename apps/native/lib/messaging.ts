@@ -1,11 +1,12 @@
 /**
  * Messaging helpers for React Native
- * Handles encryption/decryption of messages
+ * Handles encryption/decryption of messages and local storage
  */
 
 import { encryptMessage, decryptMessage } from "@auxlink/crypto";
 import { getPrivateKey } from "@auxlink/crypto/storage/mobile";
 import { trpcClient } from "../utils/trpc";
+import { localDb } from "./local-db";
 
 /**
  * Send an encrypted message to a recipient device
@@ -36,24 +37,44 @@ export const sendEncryptedMessage = async (
   const encryptedContent = await encryptMessage(messageContent, recipientDevice.publicKey);
 
   // Send via tRPC
-  return await trpcClient.message.send.mutate({
+  const result = await trpcClient.message.send.mutate({
     senderDeviceId,
     recipientDeviceId,
     encryptedContent,
     contentType: "text",
   });
+
+  // Store message locally
+  await localDb.saveMessage({
+    id: result.id,
+    conversationId: recipientDeviceId,
+    content: messageContent, // Store decrypted content locally
+    encryptedContent,
+    isSent: true,
+    status: result.status as "pending" | "sent" | "delivered" | "read",
+    timestamp: new Date(result.sentAt).getTime(),
+    contentType: "text",
+  });
+
+  return result;
 };
 
 /**
- * Decrypt a received message
+ * Decrypt a received message and store it locally
  * 
+ * @param messageId - The message ID from the server
+ * @param senderDeviceId - The sender's device ID
  * @param encryptedContent - The encrypted message content
  * @param deviceId - The local device ID (to retrieve private key)
+ * @param timestamp - Message timestamp
  * @returns Decrypted message content
  */
 export const decryptReceivedMessage = async (
+  messageId: string,
+  senderDeviceId: string,
   encryptedContent: string,
-  deviceId: string
+  deviceId: string,
+  timestamp: number
 ): Promise<string> => {
   // Get local device's private key
   const privateKey = await getPrivateKey(deviceId);
@@ -63,7 +84,21 @@ export const decryptReceivedMessage = async (
   }
 
   // Decrypt the message
-  return await decryptMessage(encryptedContent, privateKey);
+  const decryptedContent = await decryptMessage(encryptedContent, privateKey);
+
+  // Store message locally
+  await localDb.saveMessage({
+    id: messageId,
+    conversationId: senderDeviceId,
+    content: decryptedContent,
+    encryptedContent,
+    isSent: false,
+    status: "delivered",
+    timestamp,
+    contentType: "text",
+  });
+
+  return decryptedContent;
 };
 
 /**

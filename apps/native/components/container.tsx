@@ -8,10 +8,17 @@ const AnimatedView = Animated.createAnimatedComponent(View);
 
 type Props = AnimatedProps<ViewProps> & {
   className?: string;
+  scrollable?: boolean;
 };
 
-export function Container({ children, className, ...props }: PropsWithChildren<Props>) {
+export function Container({ children, className, scrollable = true, ...props }: PropsWithChildren<Props>) {
   const insets = useSafeAreaInsets();
+
+  const content = scrollable ? (
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>{children}</ScrollView>
+  ) : (
+    children
+  );
 
   return (
     <AnimatedView
@@ -21,7 +28,8 @@ export function Container({ children, className, ...props }: PropsWithChildren<P
       }}
       {...props}
     >
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>{children}</ScrollView>
+      {content}
     </AnimatedView>
   );
 }
+

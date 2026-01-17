@@ -1,4 +1,7 @@
 import "@/global.css";
+import { polyfillWebCrypto } from "expo-standard-web-crypto";
+polyfillWebCrypto();
+
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { HeroUINativeProvider } from "heroui-native";

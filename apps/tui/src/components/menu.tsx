@@ -5,6 +5,9 @@ import { getDeviceId } from "@/lib/device-storage";
 import { trpc } from "@/utils/trpc";
 import { logger } from "@/lib/logger";
 import { Pairing } from "@/components/pairing";
+import { Inbox } from "@/components/inbox";
+import { localDb } from "@/lib/local-db";
+import { decryptReceivedMessage } from "@/lib/messaging";
 
 interface MenuProps {
   onLogout: () => void;
@@ -17,7 +20,7 @@ interface MenuProps {
 
 type MenuItem = "messages" | "pairing" | "settings" | "logout";
 type LogoutFocus = "yes" | "no";
-type Screen = "menu" | "pairing";
+type Screen = "menu" | "pairing" | "inbox";
 
 export function Menu({ onLogout, onNavigationChange }: MenuProps) {
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
@@ -30,10 +33,13 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
 
   const menuItems: MenuItem[] = ["messages", "pairing", "settings", "logout"];
 
+  useEffect(() => {
+    localDb.init();
+  }, []);
+
   // Handle navigation and keyboard shortcuts
   useEffect(() => {
     if (screen !== "menu") {
-      // Don't register navigation handlers when not on menu screen
       return;
     }
 
@@ -150,22 +156,48 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
           },
           {
             async onData(event: any) {
-              // Check if this is an error event (has code/data but no message object)
+              // Check if this is an error event
               if (event?.code || event?.data?.code) {
                 return;
               }
               
-              // Extract message from event
-              const msg = event?.data?.message;
+              const eventType = event?.data?.type;
               
-              if (!msg || !msg.senderDeviceId || !msg.encryptedContent) {
-                return;
+              // Handle incoming messages
+              if (eventType === "message:received") {
+                const msg = event?.data?.message;
+                
+                if (!msg || !msg.senderDeviceId || !msg.encryptedContent) {
+                  return;
+                }
+                
+                // Store this message ID for future reconnections
+                await storage.setItem(`lastMessageId:${deviceId}`, msg.id);
+                
+                // Decrypt and store the received message
+                await decryptReceivedMessage(
+                  msg.id,
+                  msg.senderDeviceId,
+                  msg.encryptedContent,
+                  deviceId,
+                  new Date(msg.sentAt).getTime()
+                );
+
+                // Send delivery receipt
+                await trpc.message.updateStatus.mutate({
+                  messageId: msg.id,
+                  status: "delivered",
+                });
               }
               
-              // Store this message ID for future reconnections
-              await storage.setItem(`lastMessageId:${deviceId}`, msg.id);
-              
-              // TODO: Handle received message (Phase 4 - add to message store)
+              // Handle status updates
+              else if (eventType === "message:status_updated") {
+                const { messageId, status } = event.data as any;
+                if (messageId) {
+                  // Update local message status
+                  localDb.updateMessageStatus(messageId, status);
+                }
+              }
             },
             onError(err: any) {
               console.error("[message-subscription] Error:", err);
@@ -198,7 +230,7 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
   function handleMenuAction(item: MenuItem) {
     switch (item) {
       case "messages":
-        // TODO: Navigate to messages screen (Phase 4)
+        setScreen("inbox");
         break;
       case "pairing":
         setScreen("pairing");
@@ -216,7 +248,7 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
   if (loading) {
     return (
       <box style={{ flexDirection: "column", gap: 1, alignItems: "center", alignSelf: "center" }}>
-        <text fg="#7C3AED">⏳ Loading...</text>
+        <text fg="#7C3AED">{"⏳ Loading..."}</text>
       </box>
     );
   }
@@ -226,24 +258,29 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
     return <Pairing onBack={() => setScreen("menu")} onNavigationChange={onNavigationChange} />;
   }
 
+  // Inbox screen
+  if (screen === "inbox") {
+    return <Inbox onBack={() => setScreen("menu")} onNavigationChange={onNavigationChange} />;
+  }
+
   // Logout confirmation dialog
   if (showLogoutConfirm) {
     return (
       <box style={{ flexDirection: "column", gap: 1, minWidth: 50, alignItems: "center", alignSelf: "center" }}>
         <text fg="#7C3AED">Logout</text>
         <text></text>
-        <text fg="#FFFFFF">Are you sure you want to logout?</text>
+        <text fg="#FFFFFF">{"Are you sure you want to logout?"}</text>
         <text></text>
         <box style={{ flexDirection: "column", gap: 0, alignItems: "flex-start" }}>
           <text fg={logoutFocus === "yes" ? "red" : "#888"}>
-            {logoutFocus === "yes" ? "▶ " : "  "}[Y] Yes, logout
+            {`${logoutFocus === "yes" ? "▶ " : "  "}[Y] Yes, logout`}
           </text>
           <text fg={logoutFocus === "no" ? "#7C3AED" : "#888"}>
-            {logoutFocus === "no" ? "▶ " : "  "}[N] No, cancel
+            {`${logoutFocus === "no" ? "▶ " : "  "}[N] No, cancel`}
           </text>
         </box>
         <text></text>
-        <text fg="#666">↑↓ Navigate • Y/N or Enter Confirm</text>
+        <text fg="#666">{"↑↓ Navigate • Y/N or Enter Confirm"}</text>
       </box>
     );
   }
@@ -255,16 +292,16 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
         <text fg="#7C3AED">Keyboard Shortcuts</text>
         <text></text>
         <box style={{ flexDirection: "column", gap: 0, alignItems: "flex-start" }}>
-          <text fg="#FFFFFF">M - Messages</text>
-          <text fg="#FFFFFF">P - Pairing</text>
-          <text fg="#FFFFFF">S - Settings</text>
-          <text fg="#FFFFFF">Q - Logout</text>
-          <text fg="#FFFFFF">? - Toggle Help</text>
+          <text fg="#FFFFFF">{"M - Messages"}</text>
+          <text fg="#FFFFFF">{"P - Pairing"}</text>
+          <text fg="#FFFFFF">{"S - Settings"}</text>
+          <text fg="#FFFFFF">{"Q - Logout"}</text>
+          <text fg="#FFFFFF">{"? - Toggle Help"}</text>
         </box>
         <text></text>
-        <text fg="#888">↑↓ Navigate • Enter Select</text>
+        <text fg="#888">{"↑↓ Navigate • Enter Select"}</text>
         <text></text>
-        <text fg="#666">Press any key to close</text>
+        <text fg="#666">{"Press any key to close"}</text>
       </box>
     );
   }
@@ -273,8 +310,8 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
   return (
     <box style={{ flexDirection: "column", gap: 1, minWidth: 50, alignItems: "center", alignSelf: "center" }}>
       <text fg="#7C3AED">AuxLink</text>
-      <text fg="#666">Welcome, {user?.name || "User"}!</text>
-      <text fg="#444">{user?.email || "N/A"}</text>
+      <text fg="#666">{`Welcome, ${user?.name || "User"}!`}</text>
+      <text fg="#444">{`${user?.email || "N/A"}`}</text>
       <text></text>
 
       <text fg="#888">MAIN MENU</text>
@@ -283,21 +320,21 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
       {/* Menu items - simple text list */}
       <box style={{ flexDirection: "column", gap: 0, alignItems: "flex-start" }}>
         <text fg={focusedItem === "messages" ? "#7C3AED" : "#FFFFFF"}>
-          {focusedItem === "messages" ? "▶" : " "} [M] Messages
+          {`${focusedItem === "messages" ? "▶" : " "} [M] Messages`}
         </text>
         <text fg={focusedItem === "pairing" ? "#7C3AED" : "#FFFFFF"}>
-          {focusedItem === "pairing" ? "▶" : " "} [P] Pairing
+          {`${focusedItem === "pairing" ? "▶" : " "} [P] Pairing`}
         </text>
         <text fg={focusedItem === "settings" ? "#7C3AED" : "#FFFFFF"}>
-          {focusedItem === "settings" ? "▶" : " "} [S] Settings
+          {`${focusedItem === "settings" ? "▶" : " "} [S] Settings`}
         </text>
         <text fg={focusedItem === "logout" ? "red" : "#FFFFFF"}>
-          {focusedItem === "logout" ? "▶" : " "} [Q] Logout
+          {`${focusedItem === "logout" ? "▶" : " "} [Q] Logout`}
         </text>
       </box>
 
       <text></text>
-      <text fg="#666">Press letter key or ↑↓ to navigate • ? for help</text>
+      <text fg="#666">{"Press letter key or ↑↓ to navigate • ? for help"}</text>
     </box>
   );
 }

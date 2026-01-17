@@ -34,7 +34,9 @@
   },
   "dependencies": {
     "@auxlink/env": "workspace:*",
+    "@noble/ciphers": "^2.1.1",
     "dotenv": "catalog:",
+    "expo-standard-web-crypto": "^3.0.8",
     "zod": "catalog:"
   },
   "devDependencies": {

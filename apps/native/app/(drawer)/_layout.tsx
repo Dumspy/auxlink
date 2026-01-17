@@ -38,6 +38,38 @@ function DrawerLayout() {
         }}
       />
       <Drawer.Screen
+        name="messages"
+        options={{
+          headerTitle: "Messages",
+          drawerLabel: ({ color, focused }) => (
+            <Text style={{ color: focused ? color : themeColorForeground }}>Messages</Text>
+          ),
+          drawerIcon: ({ size, color, focused }) => (
+            <Ionicons
+              name="chatbubble-outline"
+              size={size}
+              color={focused ? color : themeColorForeground}
+            />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="pairing"
+        options={{
+          headerTitle: "Pair Device",
+          drawerLabel: ({ color, focused }) => (
+            <Text style={{ color: focused ? color : themeColorForeground }}>Pair Device</Text>
+          ),
+          drawerIcon: ({ size, color, focused }) => (
+            <Ionicons
+              name="qr-code-outline"
+              size={size}
+              color={focused ? color : themeColorForeground}
+            />
+          ),
+        }}
+      />
+      <Drawer.Screen
         name="settings"
         options={{
           headerTitle: "Settings",

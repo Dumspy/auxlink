@@ -1,14 +1,9 @@
 /**
- * Node.js/Bun compatible encryption using AES-256-GCM
- * 
- * Uses the same AES-256-GCM algorithm as the mobile version for compatibility.
- * This allows TUI and mobile devices to exchange encrypted messages seamlessly.
+ * cross-platform compatible encryption using AES-256-GCM via noble-ciphers
  */
 
 import { randomBytes } from "crypto";
-import { webcrypto } from "crypto";
-
-const crypto = webcrypto as unknown as Crypto;
+import { gcm } from "@noble/ciphers/aes.js";
 
 /**
  * Key pair interface (for symmetric encryption, both keys are the same)
@@ -25,7 +20,7 @@ export interface KeyPair {
 export const generateAESKey = async (): Promise<string> => {
   // Generate 32 random bytes (256 bits) for AES-256
   const keyBytes = randomBytes(32);
-  return keyBytes.toString("base64");
+  return Buffer.from(keyBytes).toString("base64");
 };
 
 /**
@@ -38,15 +33,6 @@ export const encryptAES = async (plaintext: string, keyBase64: string): Promise<
   // Decode the key from base64
   const keyData = Buffer.from(keyBase64, "base64");
   
-  // Import key for Web Crypto API
-  const key = await crypto.subtle.importKey(
-    "raw",
-    keyData,
-    { name: "AES-GCM", length: 256 },
-    false,
-    ["encrypt"]
-  );
-  
   // Generate random IV (12 bytes recommended for GCM)
   const iv = randomBytes(12);
   
@@ -54,15 +40,11 @@ export const encryptAES = async (plaintext: string, keyBase64: string): Promise<
   const encoder = new TextEncoder();
   const plaintextBytes = encoder.encode(plaintext);
   
-  // Encrypt
-  const ciphertextBuffer = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv: iv },
-    key,
-    plaintextBytes
-  );
+  // Use noble-ciphers AES-GCM
+  const aes = gcm(keyData, iv);
+  const ciphertext = aes.encrypt(plaintextBytes);
   
   // Combine IV + ciphertext
-  const ciphertext = new Uint8Array(ciphertextBuffer);
   const combined = Buffer.concat([iv, Buffer.from(ciphertext)]);
   
   // Return as base64
@@ -79,15 +61,6 @@ export const decryptAES = async (ciphertextBase64: string, keyBase64: string): P
   // Decode the key from base64
   const keyData = Buffer.from(keyBase64, "base64");
   
-  // Import key for Web Crypto API
-  const key = await crypto.subtle.importKey(
-    "raw",
-    keyData,
-    { name: "AES-GCM", length: 256 },
-    false,
-    ["decrypt"]
-  );
-  
   // Decode combined IV + ciphertext from base64
   const combined = Buffer.from(ciphertextBase64, "base64");
   
@@ -95,16 +68,13 @@ export const decryptAES = async (ciphertextBase64: string, keyBase64: string): P
   const iv = combined.subarray(0, 12);
   const ciphertext = combined.subarray(12);
   
-  // Decrypt
-  const plaintextBuffer = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: iv },
-    key,
-    ciphertext
-  );
+  // Use noble-ciphers AES-GCM
+  const aes = gcm(keyData, iv);
+  const plaintextBytes = aes.decrypt(ciphertext);
   
   // Decode bytes to string
   const decoder = new TextDecoder();
-  return decoder.decode(plaintextBuffer);
+  return decoder.decode(plaintextBytes);
 };
 
 /**

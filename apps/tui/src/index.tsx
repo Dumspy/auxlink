@@ -156,25 +156,23 @@ function handleInput(sequence: string): boolean {
   const ARROW_RIGHT = "\x1b[C";
   const ARROW_LEFT = "\x1b[D";
   const ENTER = "\r";
+  const BACKSPACE = "\x7f";
+  const ESC = "\x1b";
 
   // If we're in an input field, still allow arrow keys for navigation
   // but block letter keys from being consumed by shortcuts
   if (isInInputField) {
-    // Allow arrow keys to navigate between fields
-    if (sequence === ARROW_UP || sequence === ARROW_LEFT) {
-      globalNavigationHandlers.onArrowUp();
-      return true;
-    } else if (sequence === ARROW_DOWN || sequence === ARROW_RIGHT) {
-      globalNavigationHandlers.onArrowDown();
-      return true;
-    }
-    // Allow Tab key for switching tabs
-    else if (sequence === "\t") {
-      globalNavigationHandlers.onKeyPress(sequence);
+    // Special handling for escape sequences in input mode
+    if (sequence === ARROW_UP || sequence === ARROW_DOWN || sequence === ARROW_LEFT || sequence === ARROW_RIGHT) {
+      // Still allow navigation
+      if (sequence === ARROW_UP || sequence === ARROW_LEFT) globalNavigationHandlers.onArrowUp();
+      else globalNavigationHandlers.onArrowDown();
       return true;
     }
-    // Let all other keys (letters, numbers, backspace, etc.) pass through to input
-    return false;
+    
+    // Pass everything else (letters, backspace, enter, etc.) to the component
+    globalNavigationHandlers.onKeyPress(sequence);
+    return true;
   }
 
   // Not in input field - handle navigation normally

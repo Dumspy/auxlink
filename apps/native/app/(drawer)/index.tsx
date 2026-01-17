@@ -4,6 +4,7 @@ import { Card, useThemeColor } from "heroui-native";
 import { useEffect, useState } from "react";
 import { Text, View, Pressable } from "react-native";
 import * as Device from "expo-device";
+import * as SecureStore from "expo-secure-store";
 
 import { Container } from "@/components/container";
 import { authClient } from "@/lib/auth-client";
@@ -14,10 +15,19 @@ import {
   storeDeviceId,
   clearDeviceId,
 } from "@/lib/device-storage";
+import { localDb } from "@/lib/local-db";
+import { decryptReceivedMessage } from "@/lib/messaging";
 
 export default function Home() {
   const { data: session } = authClient.useSession();
   const iconColor = "#7C3AED";
+
+  // Initialize local database
+  useEffect(() => {
+    localDb.init().then(() => {
+      console.log("[home] Local database initialized");
+    });
+  }, []);
 
   // Device registration - runs after auth is confirmed
   useEffect(() => {
@@ -99,8 +109,14 @@ export default function Home() {
         return;
       }
 
+      // Try to get last message ID for reconnection
+      const lastMessageId = await SecureStore.getItemAsync(`lastMessageId_${deviceId}`);
+
       const subscription = trpcClient.message.onMessage.subscribe(
-        { deviceId },
+        { 
+          deviceId,
+          lastEventId: lastMessageId || undefined,
+        },
         {
           onData(event) {
             // Check if this is an error event
@@ -108,13 +124,48 @@ export default function Home() {
               return;
             }
 
-            const msg = event.data?.message;
+            const eventType = event.data?.type;
 
-            if (!msg || !msg.senderDeviceId || !msg.encryptedContent) {
-              return;
+            // Handle incoming messages
+            if (eventType === "message:received") {
+              const msg = event.data?.message;
+              if (!msg || !msg.senderDeviceId || !msg.encryptedContent) {
+                return;
+              }
+
+              // Decrypt and store the received message
+              decryptReceivedMessage(
+                msg.id,
+                msg.senderDeviceId,
+                msg.encryptedContent,
+                deviceId,
+                new Date(msg.sentAt).getTime()
+              ).then(async () => {
+                console.log("[home] Message received and stored");
+                
+                // Store this message ID for future reconnections
+                await SecureStore.setItemAsync(`lastMessageId_${deviceId}`, msg.id);
+                
+                // Send delivery receipt
+                trpcClient.message.updateStatus.mutate({
+                  messageId: msg.id,
+                  status: "delivered",
+                });
+              }).catch((error) => {
+                console.error("[home] Failed to decrypt message:", error);
+              });
             }
-
-            // TODO: Handle received message (Phase 4 - add to message store)
+            
+            // Handle status updates
+            else if (eventType === "message:status_updated") {
+              const { messageId, status } = event.data as any;
+              if (messageId) {
+                // Update local message status
+                localDb.updateMessageStatus(messageId, status).catch((error) => {
+                  console.error("[home] Failed to update message status:", error);
+                });
+              }
+            }
           },
           onError(err) {
             console.error("[message-subscription] Error:", err);
@@ -156,7 +207,7 @@ export default function Home() {
         <Pressable
           className="w-full active:opacity-70"
           onPress={() => {
-            // TODO: Navigate to messages screen (Phase 4)
+            router.push("/(drawer)/messages" as any);
           }}
         >
           <Card variant="secondary" className="p-6">

@@ -197,11 +197,11 @@ export function Pairing({ onBack, onNavigationChange }: PairingProps) {
   if (state.status === "error") {
     return (
       <box style={{ flexDirection: "column", gap: 1, minWidth: 60, alignItems: "center", alignSelf: "center" }}>
-        <text fg="red">Pairing Error</text>
+        <text fg="red">{"Pairing Error"}</text>
         <text></text>
-        <text fg="#FFFFFF">{state.error || "Unknown error occurred"}</text>
+        <text fg="#FFFFFF">{`${state.error || "Unknown error occurred"}`}</text>
         <text></text>
-        <text fg="#666">Press Q or Enter to go back</text>
+        <text fg="#666">{"Press Q or Enter to go back"}</text>
       </box>
     );
   }
@@ -210,12 +210,12 @@ export function Pairing({ onBack, onNavigationChange }: PairingProps) {
   if (state.status === "expired") {
     return (
       <box style={{ flexDirection: "column", gap: 1, minWidth: 60, alignItems: "center", alignSelf: "center" }}>
-        <text fg="#FFA500">Pairing Expired</text>
+        <text fg="#FFA500">{"Pairing Expired"}</text>
         <text></text>
-        <text fg="#FFFFFF">QR code expired after 5 minutes</text>
-        <text fg="#888">Please try again</text>
+        <text fg="#FFFFFF">{"QR code expired after 5 minutes"}</text>
+        <text fg="#888">{"Please try again"}</text>
         <text></text>
-        <text fg="#666">Press Q or Enter to go back</text>
+        <text fg="#666">{"Press Q or Enter to go back"}</text>
       </box>
     );
   }
@@ -224,15 +224,15 @@ export function Pairing({ onBack, onNavigationChange }: PairingProps) {
   if (state.status === "completed") {
     return (
       <box style={{ flexDirection: "column", gap: 1, minWidth: 60, alignItems: "center", alignSelf: "center" }}>
-        <text fg="#00FF00">Pairing Successful!</text>
+        <text fg="#00FF00">{"Pairing Successful!"}</text>
         <text></text>
-        <text fg="#7C3AED">Mobile Device Paired</text>
-        <text fg="#FFFFFF">Name: {state.mobileDevice?.name || "Unknown"}</text>
-        <text fg="#888">ID: {state.mobileDevice?.id || "Unknown"}</text>
+        <text fg="#7C3AED">{"Mobile Device Paired"}</text>
+        <text fg="#FFFFFF">{`Name: ${state.mobileDevice?.name || "Unknown"}`}</text>
+        <text fg="#888">{`ID: ${state.mobileDevice?.id || "Unknown"}`}</text>
         <text></text>
-        <text fg="#00FF00">✓ You can now send messages between devices</text>
+        <text fg="#00FF00">{"✓ You can now send messages between devices"}</text>
         <text></text>
-        <text fg="#666">Press D or Enter to continue</text>
+        <text fg="#666">{"Press D or Enter to continue"}</text>
       </box>
     );
   }
@@ -241,9 +241,9 @@ export function Pairing({ onBack, onNavigationChange }: PairingProps) {
   if (state.status === "generating") {
     return (
       <box style={{ flexDirection: "column", gap: 1, minWidth: 60, alignItems: "center", alignSelf: "center" }}>
-        <text fg="#7C3AED">Device Pairing</text>
+        <text fg="#7C3AED">{"Device Pairing"}</text>
         <text></text>
-        <text fg="#FFFFFF">⏳ Generating QR code...</text>
+        <text fg="#FFFFFF">{"⏳ Generating QR code..."}</text>
       </box>
     );
   }
@@ -253,24 +253,24 @@ export function Pairing({ onBack, onNavigationChange }: PairingProps) {
 
   return (
     <box style={{ flexDirection: "column", gap: 1, minWidth: 60, alignItems: "center", alignSelf: "center" }}>
-      <text fg="#7C3AED">Device Pairing</text>
+      <text fg="#7C3AED">{"Device Pairing"}</text>
       <text></text>
-      <text fg="#FFFFFF">Scan this QR code with your mobile device:</text>
+      <text fg="#FFFFFF">{"Scan this QR code with your mobile device:"}</text>
       <text></text>
 
       {/* QR Code */}
       <box style={{ flexDirection: "column", alignItems: "center", alignSelf: "center" }}>
         <text fg="#FFFFFF">
-          {state.qrCode || ""}
+          {`${state.qrCode || ""}`}
         </text>
       </box>
 
       <text></text>
-      <text fg="#888">Time remaining: {formattedTime}</text>
+      <text fg="#888">{`Time remaining: ${formattedTime}`}</text>
       <text></text>
-      <text fg="#666">⏳ Waiting for mobile device to scan...</text>
+      <text fg="#666">{"⏳ Waiting for mobile device to scan..."}</text>
       <text></text>
-      <text fg="#666">Press C or Q to cancel</text>
+      <text fg="#666">{"Press C or Q to cancel"}</text>
     </box>
   );
 }
