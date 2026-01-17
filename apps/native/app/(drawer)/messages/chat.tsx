@@ -326,13 +326,15 @@ export default function ChatScreen() {
         <Container scrollable={false} className="flex-1">
           {/* Messages list */}
           <FlatList
-
             ref={flatListRef}
             data={messages}
             keyExtractor={(item) => item.id}
             renderItem={renderMessage}
             contentContainerClassName="p-4"
             showsVerticalScrollIndicator={false}
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={10}
+            windowSize={10}
             onContentSizeChange={() => {
               flatListRef.current?.scrollToEnd({ animated: false });
             }}

@@ -186,6 +186,9 @@ export default function MessagesListScreen() {
           keyExtractor={(item) => item.deviceId}
           renderItem={renderConversation}
           showsVerticalScrollIndicator={false}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={10}
           refreshControl={
             <RefreshControl
               refreshing={loading}
