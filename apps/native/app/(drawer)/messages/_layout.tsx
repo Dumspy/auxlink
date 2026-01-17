@@ -1,10 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Stack, useNavigation } from "expo-router";
+import { DrawerToggleButton } from "@react-navigation/drawer";
+import { Stack } from "expo-router";
 import { useThemeColor } from "heroui-native";
-import { Pressable } from "react-native";
+import { View } from "react-native";
 
 export default function MessagesLayout() {
-  const navigation = useNavigation();
   const themeColorForeground = useThemeColor("foreground");
   const themeColorBackground = useThemeColor("background");
 
@@ -18,6 +18,11 @@ export default function MessagesLayout() {
           color: themeColorForeground,
         },
         contentStyle: { backgroundColor: themeColorBackground },
+        headerShadowVisible: true,
+        headerTransparent: false,
+        headerBackground: () => (
+          <View style={{ flex: 1, backgroundColor: themeColorBackground }} />
+        ),
       }}
     >
       <Stack.Screen
@@ -25,12 +30,7 @@ export default function MessagesLayout() {
         options={{
           headerTitle: "Messages",
           headerLeft: () => (
-            <Pressable
-              onPress={() => (navigation as any).openDrawer?.()}
-              className="ml-4"
-            >
-              <Ionicons name="menu" size={24} color={themeColorForeground} />
-            </Pressable>
+            <DrawerToggleButton tintColor={themeColorForeground} />
           ),
         }}
       />
