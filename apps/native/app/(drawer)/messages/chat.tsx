@@ -1,3 +1,4 @@
+import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, router, Stack } from "expo-router";
 import { Card, useThemeColor } from "heroui-native";
@@ -7,6 +8,7 @@ import {
   View,
   TextInput,
   Pressable,
+  PressableStateCallbackType,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -32,12 +34,18 @@ export default function ChatScreen() {
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [sendFocused, setSendFocused] = React.useState(false);
   const flatListRef = useRef<FlatList>(null);
 
   const iconColor = "#7C3AED";
   const themeColorForeground = useThemeColor("foreground");
   const themeColorMuted = useThemeColor("muted");
   const themeColorBackground = useThemeColor("background");
+
+  const sendFocusStyle = ({ pressed }: PressableStateCallbackType) => ({
+    opacity: pressed ? 0.7 : sendFocused ? 0.8 : 1,
+    backgroundColor: sendFocused && inputText.trim() && !sending ? "#6D28D9" : undefined,
+  });
 
   // Initialize local database
   useEffect(() => {
@@ -364,11 +372,14 @@ export default function ChatScreen() {
               <Pressable
                 onPress={handleSend}
                 disabled={!inputText.trim() || sending}
+                style={sendFocusStyle}
                 className={`w-12 h-12 rounded-full items-center justify-center ${
                   inputText.trim() && !sending
                     ? "bg-[#7C3AED]"
                     : "bg-gray-300 dark:bg-gray-700"
                 }`}
+                onFocus={() => setSendFocused(true)}
+                onBlur={() => setSendFocused(false)}
                 accessibilityLabel="Send message"
                 accessibilityRole="button"
                 accessibilityState={{ disabled: !inputText.trim() || sending }}

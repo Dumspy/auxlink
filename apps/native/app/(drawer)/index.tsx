@@ -1,8 +1,9 @@
+import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Redirect, router } from "expo-router";
 import { Card, useThemeColor } from "heroui-native";
 import { useEffect, useState } from "react";
-import { Text, View, Pressable } from "react-native";
+import { Text, View, Pressable, PressableStateCallbackType } from "react-native";
 import * as Device from "expo-device";
 import * as SecureStore from "expo-secure-store";
 
@@ -21,6 +22,13 @@ import { decryptReceivedMessage } from "@/lib/messaging";
 export default function Home() {
   const { data: session } = authClient.useSession();
   const iconColor = "#7C3AED";
+  const [focusedCard, setFocusedCard] = useState<string | null>(null);
+
+  const getFocusStyle = (cardId: string) => ({ pressed }: PressableStateCallbackType) => ({
+    opacity: pressed ? 0.7 : focusedCard === cardId ? 0.8 : 1,
+    backgroundColor: focusedCard === cardId ? "#7C3AED20" : "transparent",
+    borderRadius: 12,
+  });
 
   // Initialize local database
   useEffect(() => {
@@ -205,10 +213,13 @@ export default function Home() {
       {/* Quick action cards */}
       <View className="gap-4">
         <Pressable
-          className="w-full active:opacity-70"
+          className="w-full"
+          style={getFocusStyle("messages")}
           onPress={() => {
             router.push("/(drawer)/messages" as any);
           }}
+          onFocus={() => setFocusedCard("messages")}
+          onBlur={() => setFocusedCard(null)}
           accessibilityLabel="Messages, view your encrypted messages"
           accessibilityRole="button"
         >
@@ -226,10 +237,13 @@ export default function Home() {
         </Pressable>
 
         <Pressable
-          className="w-full active:opacity-70"
+          className="w-full"
+          style={getFocusStyle("pairing")}
           onPress={() => {
             router.push("/(drawer)/pairing" as any);
           }}
+          onFocus={() => setFocusedCard("pairing")}
+          onBlur={() => setFocusedCard(null)}
           accessibilityLabel="Pair Device, connect to desktop app"
           accessibilityRole="button"
         >
@@ -247,10 +261,13 @@ export default function Home() {
         </Pressable>
 
         <Pressable
-          className="w-full active:opacity-70"
+          className="w-full"
+          style={getFocusStyle("settings")}
           onPress={() => {
             router.push("/(drawer)/settings" as any);
           }}
+          onFocus={() => setFocusedCard("settings")}
+          onBlur={() => setFocusedCard(null)}
           accessibilityLabel="Settings, manage your account"
           accessibilityRole="button"
         >

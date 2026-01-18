@@ -1,8 +1,9 @@
+import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Card, useThemeColor } from "heroui-native";
 import { useEffect, useState, useCallback } from "react";
-import { Text, View, Pressable, FlatList, ActivityIndicator, RefreshControl } from "react-native";
+import { Text, View, Pressable, PressableStateCallbackType, FlatList, ActivityIndicator, RefreshControl } from "react-native";
 import { useFocusEffect } from "expo-router";
 
 import { Container } from "@/components/container";
@@ -23,9 +24,23 @@ export default function MessagesListScreen() {
   const { data: session } = authClient.useSession();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [focusedConvo, setFocusedConvo] = useState<string | null>(null);
+  const [pairFocused, setPairFocused] = React.useState(false);
   const iconColor = "#7C3AED";
   const themeColorForeground = useThemeColor("foreground");
   const themeColorMuted = useThemeColor("muted");
+
+  const getConvoFocusStyle = (deviceId: string) => ({ pressed }: PressableStateCallbackType) => ({
+    opacity: pressed ? 0.7 : focusedConvo === deviceId ? 0.8 : 1,
+    backgroundColor: focusedConvo === deviceId ? "#7C3AED20" : "transparent",
+    borderRadius: 12,
+  });
+
+  const pairFocusStyle = ({ pressed }: PressableStateCallbackType) => ({
+    opacity: pressed ? 0.7 : pairFocused ? 0.8 : 1,
+    backgroundColor: pairFocused ? "#7C3AED20" : "transparent",
+    borderRadius: 8,
+  });
 
   // Initialize local database
   useEffect(() => {
@@ -98,13 +113,16 @@ export default function MessagesListScreen() {
 
   const renderConversation = ({ item }: { item: Conversation }) => (
     <Pressable
-      className="mb-3 active:opacity-70"
+      className="mb-3"
+      style={getConvoFocusStyle(item.deviceId)}
       onPress={() => {
         router.push({
           pathname: "/(drawer)/messages/chat",
           params: { deviceId: item.deviceId, deviceName: item.deviceName },
         } as any);
       }}
+      onFocus={() => setFocusedConvo(item.deviceId)}
+      onBlur={() => setFocusedConvo(null)}
       accessibilityLabel={`Conversation with ${item.deviceName}, ${item.unreadCount > 0 ? item.unreadCount + ' unread messages' : 'no unread messages'}`}
       accessibilityRole="button"
     >
@@ -168,10 +186,13 @@ export default function MessagesListScreen() {
             Pair your device and start sending encrypted messages
           </Text>
           <Pressable
-            className="mt-4 active:opacity-70"
+            className="mt-4"
+            style={pairFocusStyle}
             onPress={() => {
               router.push("/(drawer)/pairing" as any);
             }}
+            onFocus={() => setPairFocused(true)}
+            onBlur={() => setPairFocused(false)}
             accessibilityLabel="Pair Device, connect a new device"
             accessibilityRole="button"
           >

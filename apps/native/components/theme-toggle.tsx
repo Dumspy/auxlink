@@ -1,6 +1,7 @@
+import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { Platform, Pressable } from "react-native";
+import { Platform, Pressable, PressableStateCallbackType } from "react-native";
 import Animated, { FadeOut, ZoomIn, useReducedMotion } from "react-native-reanimated";
 import { withUniwind } from "uniwind";
 
@@ -11,6 +12,13 @@ const StyledIonicons = withUniwind(Ionicons);
 export function ThemeToggle() {
   const { toggleTheme, isLight } = useAppTheme();
   const reduceMotion = useReducedMotion();
+  const [focused, setFocused] = React.useState(false);
+
+  const focusStyle = ({ pressed }: PressableStateCallbackType) => ({
+    opacity: pressed ? 0.7 : focused ? 0.8 : 1,
+    backgroundColor: focused ? (isLight ? "#00000020" : "#FFFFFF20") : "transparent",
+    borderRadius: 8,
+  });
 
   return (
     <Pressable
@@ -21,6 +29,9 @@ export function ThemeToggle() {
         toggleTheme();
       }}
       className="px-2.5"
+      style={focusStyle}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
       accessibilityLabel={isLight ? "Switch to dark theme" : "Switch to light theme"}
       accessibilityRole="button"
     >

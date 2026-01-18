@@ -1,6 +1,7 @@
+import React from "react";
 import { Redirect, router } from "expo-router";
 import { Button, useThemeColor } from "heroui-native";
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { View, Text, Pressable, PressableStateCallbackType, StyleSheet } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
 import { Container } from "@/components/container";
@@ -8,6 +9,14 @@ import { authClient } from "@/lib/auth-client";
 
 export default function Welcome() {
   const { data: session } = authClient.useSession();
+  const [focused, setFocused] = React.useState(false);
+
+  const focusStyle = ({ pressed }: PressableStateCallbackType) => ({
+    opacity: pressed ? 0.7 : focused ? 0.8 : 1,
+    backgroundColor: focused ? "#7C3AED20" : "transparent",
+    borderRadius: 8,
+    padding: 4,
+  });
 
   if (session?.user) {
     return <Redirect href="/(drawer)" />;
@@ -66,6 +75,9 @@ export default function Welcome() {
             <Text className="text-sm text-muted">Already have an account? </Text>
             <Pressable 
               onPress={() => router.push("/(auth)/login" as any)}
+              style={focusStyle}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
               accessibilityLabel="Sign in, go to login page"
               accessibilityRole="link"
             >
