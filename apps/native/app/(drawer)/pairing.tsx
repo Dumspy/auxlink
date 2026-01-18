@@ -7,8 +7,10 @@ import { Text, View, StyleSheet, Alert } from "react-native";
 import { Container } from "@/components/container";
 import { getDeviceId } from "@/lib/device-storage";
 import { completePairing, parseQRPayload } from "@/lib/pairing";
+import { useAppTheme } from "@/contexts/app-theme-context";
 
 export default function PairingScanner() {
+  const { isLight, isDark } = useAppTheme();
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -201,8 +203,20 @@ export default function PairingScanner() {
             }}
             onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
           >
-            <View style={styles.overlay}>
-              <View style={styles.scanArea} />
+            <View style={{
+              flex: 1,
+              backgroundColor: isLight ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 0, 0, 0.6)",
+              justifyContent: "center",
+              alignItems: "center",
+            }}>
+              <View style={{
+                width: 250,
+                height: 250,
+                borderWidth: 2,
+                borderColor: isLight ? "#7C3AED" : "#A78BFA",
+                borderRadius: 16,
+                backgroundColor: "transparent",
+              }} />
             </View>
           </CameraView>
         </View>
@@ -267,20 +281,7 @@ const styles = StyleSheet.create({
   camera: {
     flex: 1,
   },
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  scanArea: {
-    width: 250,
-    height: 250,
-    borderWidth: 2,
-    borderColor: "#7C3AED",
-    borderRadius: 16,
-    backgroundColor: "transparent",
-  },
+
   processingContainer: {
     alignItems: "center",
     paddingVertical: 20,
