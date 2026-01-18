@@ -41,7 +41,7 @@ function DrawerLayout() {
       <Drawer.Screen
         name="messages"
         options={{
-          headerShown: false,
+          headerTitle: "Messages",
           drawerLabel: ({ color, focused }) => (
             <Text style={{ color: focused ? color : themeColorForeground }}>Messages</Text>
           ),
