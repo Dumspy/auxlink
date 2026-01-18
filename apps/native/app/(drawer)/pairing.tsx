@@ -145,7 +145,7 @@ export default function PairingScanner() {
       <Container edges={["top", "bottom"]} scrollable={false}>
         <View style={styles.centered}>
           <Text className="text-base text-foreground">
-            Requesting camera permission...
+            Requesting camera permission…
           </Text>
         </View>
       </Container>
@@ -210,7 +210,7 @@ export default function PairingScanner() {
         {isProcessing && (
           <View style={styles.processingContainer}>
             <Text className="text-base text-foreground">
-              Processing pairing...
+              Processing pairing…
             </Text>
           </View>
         )}

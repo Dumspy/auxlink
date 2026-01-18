@@ -168,7 +168,7 @@ export default function MessagesListScreen() {
     return (
       <Container scrollable={false} className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" color={iconColor} />
-        <Text className="text-muted mt-4">Loading conversations...</Text>
+        <Text className="text-muted mt-4">Loading conversations…</Text>
       </Container>
     );
   }

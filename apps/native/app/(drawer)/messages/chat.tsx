@@ -313,7 +313,7 @@ export default function ChatScreen() {
     return (
       <Container scrollable={false} className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" color={iconColor} />
-        <Text className="text-muted mt-4">Loading messages...</Text>
+        <Text className="text-muted mt-4">Loading messages…</Text>
       </Container>
     );
   }
