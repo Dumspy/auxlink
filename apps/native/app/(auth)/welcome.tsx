@@ -1,7 +1,7 @@
 import React from "react";
 import { Redirect, router } from "expo-router";
 import { Button, useThemeColor } from "heroui-native";
-import { View, Text, Pressable, PressableStateCallbackType, StyleSheet } from "react-native";
+import { View, Text, Pressable, PressableStateCallbackType } from "react-native";
 import Svg, { Path } from "react-native-svg";
 
 import { Container } from "@/components/container";
@@ -24,14 +24,24 @@ export default function Welcome() {
 
   return (
     <Container edges={["top", "bottom"]} scrollable={false}>
-      <View style={styles.content}>
+      <View style={{
+        flex: 1,
+        paddingHorizontal: 24,
+        paddingTop: 40,
+        paddingBottom: 40,
+        justifyContent: "space-between",
+      }}>
         {/* Logo and branding */}
-        <View style={styles.logoSection}>
+        <View style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+        }}>
           <Svg
             width={120}
             height={120}
             viewBox="0 0 2000 2000"
-            style={styles.logo}
+            style={{ marginBottom: 24 }}
           >
             <Path
               d="M597.3,1827.3h950.2L1000.1,323.1L424.3,1905h-82.6L1000.1,96l658.4,1809H597.3V1827.3z"
@@ -50,7 +60,7 @@ export default function Welcome() {
         </View>
 
         {/* Action buttons */}
-        <View style={styles.buttonSection}>
+        <View style={{ gap: 12 }}>
           <Button
             onPress={() => router.push("/(auth)/login" as any)}
             className="w-full"
@@ -94,26 +104,4 @@ export default function Welcome() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 40,
-    paddingBottom: 40,
-    justifyContent: "space-between",
-  },
-  logoSection: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  logo: {
-    marginBottom: 24,
-  },
-  buttonSection: {
-    gap: 12,
-  },
-});
+

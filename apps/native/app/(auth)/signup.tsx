@@ -2,7 +2,7 @@ import React from "react";
 import { Redirect, router } from "expo-router";
 import { Button, ErrorView, Spinner, TextField, useThemeColor } from "heroui-native";
 import { useState } from "react";
-import { Text, View, Pressable, PressableStateCallbackType, StyleSheet } from "react-native";
+import { Text, View, Pressable, PressableStateCallbackType } from "react-native";
 
 import { Container } from "@/components/container";
 import { authClient } from "@/lib/auth-client";
@@ -60,7 +60,12 @@ export default function SignUp() {
 
   return (
     <Container edges={["top", "bottom"]} scrollable={true}>
-      <View style={styles.scrollContent}>
+      <View style={{
+        flexGrow: 1,
+        paddingHorizontal: 24,
+        paddingTop: 40,
+        paddingBottom: 24,
+      }}>
         <View className="mb-8">
           <Text
             className="text-3xl font-bold mb-2 text-foreground"
@@ -163,11 +168,4 @@ export default function SignUp() {
   );
 }
 
-const styles = StyleSheet.create({
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 40,
-    paddingBottom: 24,
-  },
-});
+

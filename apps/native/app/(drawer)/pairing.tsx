@@ -2,7 +2,7 @@ import { CameraView, Camera, BarcodeScanningResult } from "expo-camera";
 import { router } from "expo-router";
 import { Button } from "heroui-native";
 import { useState, useEffect, useRef } from "react";
-import { Text, View, StyleSheet, Alert } from "react-native";
+import { Text, View, Alert } from "react-native";
 
 import { Container } from "@/components/container";
 import { getDeviceId } from "@/lib/device-storage";
@@ -145,7 +145,12 @@ export default function PairingScanner() {
   if (hasPermission === null) {
     return (
       <Container edges={["top", "bottom"]} scrollable={false}>
-        <View style={styles.centered}>
+        <View style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          paddingHorizontal: 24,
+        }}>
           <Text className="text-base text-foreground">
             Requesting camera permission…
           </Text>
@@ -157,7 +162,12 @@ export default function PairingScanner() {
   if (hasPermission === false) {
     return (
       <Container edges={["top", "bottom"]} scrollable={false}>
-        <View style={styles.centered}>
+        <View style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          paddingHorizontal: 24,
+        }}>
           <Text className="text-xl font-bold mb-4 text-foreground">
             Camera Access Required
           </Text>
@@ -185,8 +195,16 @@ export default function PairingScanner() {
 
   return (
     <Container edges={["top", "bottom"]} scrollable={false}>
-      <View style={styles.content}>
-        <View style={styles.header}>
+      <View style={{
+        flex: 1,
+        paddingHorizontal: 24,
+        paddingTop: 20,
+        paddingBottom: 20,
+      }}>
+        <View style={{
+          alignItems: "center",
+          marginBottom: 24,
+        }}>
           <Text className="text-2xl font-bold mb-2 text-foreground">
             Pair Device
           </Text>
@@ -195,9 +213,14 @@ export default function PairingScanner() {
           </Text>
         </View>
 
-        <View style={styles.cameraContainer}>
+        <View style={{
+          flex: 1,
+          borderRadius: 16,
+          overflow: "hidden",
+          marginBottom: 24,
+        }}>
           <CameraView
-            style={styles.camera}
+            style={{ flex: 1 }}
             barcodeScannerSettings={{
               barcodeTypes: ["qr"],
             }}
@@ -222,7 +245,10 @@ export default function PairingScanner() {
         </View>
 
         {isProcessing && (
-          <View style={styles.processingContainer}>
+          <View style={{
+            alignItems: "center",
+            paddingVertical: 20,
+          }}>
             <Text className="text-base text-foreground">
               Processing pairing…
             </Text>
@@ -230,7 +256,7 @@ export default function PairingScanner() {
         )}
 
         {!isProcessing && (
-          <View style={styles.footer}>
+          <View style={{ alignItems: "center" }}>
             <Text className="text-sm text-muted text-center mb-4">
               Position the QR code within the frame
             </Text>
@@ -255,38 +281,4 @@ export default function PairingScanner() {
   );
 }
 
-const styles = StyleSheet.create({
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 24,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 20,
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  cameraContainer: {
-    flex: 1,
-    borderRadius: 16,
-    overflow: "hidden",
-    marginBottom: 24,
-  },
-  camera: {
-    flex: 1,
-  },
 
-  processingContainer: {
-    alignItems: "center",
-    paddingVertical: 20,
-  },
-  footer: {
-    alignItems: "center",
-  },
-});
