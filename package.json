@@ -35,6 +35,8 @@
   "dependencies": {
     "@auxlink/env": "workspace:*",
     "@noble/ciphers": "^2.1.1",
+    "@opentui/core": "^0.1.74",
+    "@opentui/react": "^0.1.74",
     "dotenv": "catalog:",
     "expo-standard-web-crypto": "^3.0.8",
     "zod": "catalog:"

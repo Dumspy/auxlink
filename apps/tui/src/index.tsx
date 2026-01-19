@@ -158,21 +158,32 @@ function handleInput(sequence: string): boolean {
   const ENTER = "\r";
   const BACKSPACE = "\x7f";
   const ESC = "\x1b";
+  const CTRL_C = "\x03";
 
-  // If we're in an input field, still allow arrow keys for navigation
-  // but block letter keys from being consumed by shortcuts
+  // Handle Ctrl+C for graceful exit
+  if (sequence === CTRL_C) {
+    process.exit(0);
+    return true;
+  }
+
+  // If we're in an input field, only handle specific navigation keys
+  // Let everything else pass through to the input component
   if (isInInputField) {
-    // Special handling for escape sequences in input mode
+    // Only handle arrow keys for navigation between fields
     if (sequence === ARROW_UP || sequence === ARROW_DOWN || sequence === ARROW_LEFT || sequence === ARROW_RIGHT) {
-      // Still allow navigation
       if (sequence === ARROW_UP || sequence === ARROW_LEFT) globalNavigationHandlers.onArrowUp();
       else globalNavigationHandlers.onArrowDown();
       return true;
     }
-    
-    // Pass everything else (letters, backspace, enter, etc.) to the component
-    globalNavigationHandlers.onKeyPress(sequence);
-    return true;
+    // Handle Tab for switching between login/signup
+    else if (sequence === "\t") {
+      globalNavigationHandlers.onKeyPress(sequence);
+      return true;
+    }
+    // Let everything else (letters, numbers, backspace, enter, etc.) pass through to input
+    else {
+      return false; // Don't intercept - let the input component handle it
+    }
   }
 
   // Not in input field - handle navigation normally
