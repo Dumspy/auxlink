@@ -22,6 +22,19 @@ export const NavigationContext = createContext<{
   onKeyPress: () => {},
 });
 
+// Create a context for focus management
+export const FocusContext = createContext<{
+  registerInput: (id: string) => void;
+  unregisterInput: (id: string) => void;
+  setFocusedInput: (id: string | null) => void;
+  isFocused: (id: string) => boolean;
+}>({
+  registerInput: () => {},
+  unregisterInput: () => {},
+  setFocusedInput: () => {},
+  isFocused: () => false,
+});
+
 // Global navigation handlers and state
 let globalNavigationHandlers: {
   onArrowUp: () => void;
@@ -40,6 +53,35 @@ export function setInputFieldFocus(focused: boolean) {
   isInInputField = focused;
 }
 
+// Focus provider component
+export function FocusProvider({ children }: { children: React.ReactNode }) {
+  const [focusedInput, setFocusedInputState] = useState<string | null>(null);
+
+  const registerInput = (id: string) => {
+  };
+
+  const unregisterInput = (id: string) => {
+    if (focusedInput === id) {
+      setFocusedInputState(null);
+    }
+  };
+
+  const setFocusedInput = (id: string | null) => {
+    setFocusedInputState(id);
+    isInInputField = id !== null;
+  };
+
+  const isFocused = (id: string) => {
+    return focusedInput === id;
+  };
+
+  return (
+    <FocusContext.Provider value={{ registerInput, unregisterInput, setFocusedInput, isFocused }}>
+      {children}
+    </FocusContext.Provider>
+  );
+}
+
 function App() {
   const [screen, setScreen] = useState<Screen>("loading");
   const [navigationHandlers, setNavigationHandlers] = useState(globalNavigationHandlers);
@@ -52,6 +94,11 @@ function App() {
 
     checkSession();
   }, []);
+
+  // Reset focus when screen changes (Option 1: Auto-reset on screen change)
+  useEffect(() => {
+    setInputFieldFocus(false);
+  }, [screen]);
 
   useEffect(() => {
     async function initializeDevice() {
@@ -113,35 +160,41 @@ function App() {
 
   if (screen === "loading") {
     return (
-      <box alignItems="center" justifyContent="center" flexGrow={1}>
-        <text fg="#7C3AED">⏳ Loading AuxLink...</text>
-      </box>
+      <FocusProvider>
+        <box alignItems="center" justifyContent="center" flexGrow={1}>
+          <text fg="#7C3AED">⏳ Loading AuxLink...</text>
+        </box>
+      </FocusProvider>
     );
   }
 
   if (screen === "auth") {
     return (
-      <box alignItems="center" justifyContent="center" flexGrow={1}>
-        <NavigationContext.Provider value={navigationHandlers}>
-          <Auth
-            onSuccess={() => setScreen("menu")}
-            onNavigationChange={setNavigationHandlers}
-          />
-        </NavigationContext.Provider>
-      </box>
+      <FocusProvider>
+        <box alignItems="center" justifyContent="center" flexGrow={1}>
+          <NavigationContext.Provider value={navigationHandlers}>
+            <Auth
+              onSuccess={() => setScreen("menu")}
+              onNavigationChange={setNavigationHandlers}
+            />
+          </NavigationContext.Provider>
+        </box>
+      </FocusProvider>
     );
   }
 
   if (screen === "menu") {
     return (
-      <box alignItems="center" justifyContent="center" flexGrow={1}>
-        <NavigationContext.Provider value={navigationHandlers}>
-          <Menu
-            onLogout={() => setScreen("auth")}
-            onNavigationChange={setNavigationHandlers}
-          />
-        </NavigationContext.Provider>
-      </box>
+      <FocusProvider>
+        <box alignItems="center" justifyContent="center" flexGrow={1}>
+          <NavigationContext.Provider value={navigationHandlers}>
+            <Menu
+              onLogout={() => setScreen("auth")}
+              onNavigationChange={setNavigationHandlers}
+            />
+          </NavigationContext.Provider>
+        </box>
+      </FocusProvider>
     );
   }
 
@@ -166,10 +219,10 @@ function handleInput(sequence: string): boolean {
     return true;
   }
 
-  // If we're in an input field, only handle specific navigation keys
-  // Let everything else pass through to the input component
+  // If we're in an input field, pass keystrokes to navigation handlers
+  // Components (like Inbox with custom typing) will handle them if they want to
   if (isInInputField) {
-    // Only handle arrow keys for navigation between fields
+    // Handle arrow keys for navigation between fields (for auth screen)
     if (sequence === ARROW_UP || sequence === ARROW_DOWN || sequence === ARROW_LEFT || sequence === ARROW_RIGHT) {
       if (sequence === ARROW_UP || sequence === ARROW_LEFT) globalNavigationHandlers.onArrowUp();
       else globalNavigationHandlers.onArrowDown();
@@ -180,10 +233,10 @@ function handleInput(sequence: string): boolean {
       globalNavigationHandlers.onKeyPress(sequence);
       return true;
     }
-    // Let everything else (letters, numbers, backspace, enter, etc.) pass through to input
-    else {
-      return false; // Don't intercept - let the input component handle it
-    }
+    // Pass all other keys to navigation handler
+    // Components can choose to handle or ignore them (e.g., Inbox handles typing, auth components have actual <input>)
+    globalNavigationHandlers.onKeyPress(sequence);
+    return false; // Don't intercept - also pass to default input handling for <input> elements
   }
 
   // Not in input field - handle navigation normally

@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import { authClient } from "@/lib/auth-client";
-import { setInputFieldFocus } from "../index";
+import { setInputFieldFocus, FocusContext } from "../index";
 
 interface AuthProps {
   onSuccess: () => void;
@@ -23,6 +23,8 @@ export function Auth({ onSuccess, onNavigationChange }: AuthProps) {
   >("email");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  
+  const { setFocusedInput, isFocused } = useContext(FocusContext);
 
   // Define field order for navigation based on current tab
   const getFields = () => {
@@ -108,7 +110,21 @@ export function Auth({ onSuccess, onNavigationChange }: AuthProps) {
   useEffect(() => {
     const isInputFocused = focusedField === "email" || focusedField === "password" || focusedField === "name";
     setInputFieldFocus(isInputFocused);
-  }, [focusedField]);
+    
+    // Also update FocusContext (Option 2: Focus Context)
+    if (isInputFocused) {
+      setFocusedInput(focusedField);
+    } else {
+      setFocusedInput(null);
+    }
+  }, [focusedField, setFocusedInput]);
+
+  // Cleanup: Reset focus when component unmounts (Option 1: Auto-reset)
+  useEffect(() => {
+    return () => {
+      setInputFieldFocus(false);
+    };
+  }, []);
 
   // Handle arrow key navigation and Tab key
   useEffect(() => {

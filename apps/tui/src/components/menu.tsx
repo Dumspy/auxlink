@@ -8,6 +8,7 @@ import { Pairing } from "@/components/pairing";
 import { Inbox } from "@/components/inbox";
 import { localDb } from "@/lib/local-db";
 import { decryptReceivedMessage } from "@/lib/messaging";
+import { setInputFieldFocus } from "../index";
 
 interface MenuProps {
   onLogout: () => void;
@@ -35,6 +36,13 @@ export function Menu({ onLogout, onNavigationChange }: MenuProps) {
 
   useEffect(() => {
     localDb.init();
+  }, []);
+
+  // Cleanup: Reset focus when component unmounts (Option 1: Auto-reset)
+  useEffect(() => {
+    return () => {
+      setInputFieldFocus(false);
+    };
   }, []);
 
   // Handle navigation and keyboard shortcuts

@@ -6,6 +6,7 @@ import {
   cancelPairing,
   type PairingState,
 } from "@/lib/pairing";
+import { setInputFieldFocus } from "../index";
 
 interface PairingProps {
   onBack: () => void;
@@ -190,6 +191,8 @@ export function Pairing({ onBack, onNavigationChange }: PairingProps) {
         onArrowDown: () => {},
         onKeyPress: () => {},
       });
+      // Reset input focus when component unmounts (Option 1: Auto-reset)
+      setInputFieldFocus(false);
     };
   }, [onNavigationChange]);
 

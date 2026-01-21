@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { getDeviceId } from "@/lib/device-storage";
 import { localDb, type LocalMessage } from "@/lib/local-db";
 import { trpc } from "@/utils/trpc";
 import { decryptReceivedMessage, sendEncryptedMessage } from "@/lib/messaging";
 import { storage } from "@/lib/storage";
-import { setInputFieldFocus } from "../index";
+import { setInputFieldFocus, FocusContext } from "../index";
 
 interface InboxProps {
   onBack: () => void;
@@ -36,11 +36,20 @@ export function Inbox({ onBack, onNavigationChange }: InboxProps) {
   const [messageScrollIndex, setMessageScrollIndex] = useState(0);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  
+  const { setFocusedInput } = useContext(FocusContext);
 
   // Initialize local database
   useEffect(() => {
     localDb.init();
     loadConversations();
+  }, []);
+
+  // Cleanup: Reset focus when component unmounts (Option 1: Auto-reset)
+  useEffect(() => {
+    return () => {
+      setInputFieldFocus(false);
+    };
   }, []);
 
   // Subscribe to new messages
@@ -208,6 +217,7 @@ export function Inbox({ onBack, onNavigationChange }: InboxProps) {
       setInputText("");
       setIsTyping(false);
       setInputFieldFocus(false);
+      setFocusedInput(null); // Reset FocusContext
       loadConversationMessages(currentConversationDeviceId);
     } catch (error) {
       console.error("[inbox] Failed to send message:", error);
@@ -237,6 +247,7 @@ export function Inbox({ onBack, onNavigationChange }: InboxProps) {
             // Back to menu
             setIsTyping(false);
             setInputFieldFocus(false);
+            setFocusedInput(null);
             onBack();
           } else if (key === "r" || key === "R") {
             // Refresh
@@ -266,6 +277,7 @@ export function Inbox({ onBack, onNavigationChange }: InboxProps) {
             } else if (key === "\x1b") { // Escape
               setIsTyping(false);
               setInputFieldFocus(false);
+              setFocusedInput(null);
             } else if (key === "\x7f" || key === "\b") { // Backspace
               setInputText(prev => (prev.length > 0 ? prev.slice(0, -1) : prev));
             } else if (key.length === 1 && key !== "\r" && key !== "\n" && key !== "\x1b" && key !== "\x7f" && key !== "\t") {
@@ -278,6 +290,7 @@ export function Inbox({ onBack, onNavigationChange }: InboxProps) {
             // Back to list
             setIsTyping(false);
             setInputFieldFocus(false);
+            setFocusedInput(null);
             setViewMode("list");
             setCurrentConversation(null);
             setCurrentConversationDeviceId(null);
@@ -286,6 +299,7 @@ export function Inbox({ onBack, onNavigationChange }: InboxProps) {
             // Start typing / Reply
             setIsTyping(true);
             setInputFieldFocus(true);
+            setFocusedInput("message-input");
           }
         },
       });
