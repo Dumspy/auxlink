@@ -28,8 +28,8 @@ export function Inbox({ onBack, onNavigationChange }: InboxProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"list" | "conversation">("list");
+  const [currentConversationDeviceId, setCurrentConversationDeviceId] = useState<string | null>(null);
   const [currentConversation, setCurrentConversation] = useState<{
-    deviceId: string;
     deviceName: string;
     messages: LocalMessage[];
   } | null>(null);
@@ -90,11 +90,11 @@ export function Inbox({ onBack, onNavigationChange }: InboxProps) {
                 if (viewMode === "list") {
                   loadConversations();
                 } else if (
-                  currentConversation &&
-                  msg.senderDeviceId === currentConversation.deviceId
+                  currentConversationDeviceId &&
+                  msg.senderDeviceId === currentConversationDeviceId
                 ) {
                   // Reload current conversation
-                  loadConversationMessages(currentConversation.deviceId);
+                  loadConversationMessages(currentConversationDeviceId);
                 }
               }
               
@@ -106,8 +106,8 @@ export function Inbox({ onBack, onNavigationChange }: InboxProps) {
                   localDb.updateMessageStatus(messageId, status);
                   
                   // Reload current conversation if viewing it
-                  if (viewMode === "conversation" && currentConversation) {
-                    loadConversationMessages(currentConversation.deviceId);
+                  if (viewMode === "conversation" && currentConversationDeviceId) {
+                    loadConversationMessages(currentConversationDeviceId);
                   }
                 }
               }
@@ -127,7 +127,7 @@ export function Inbox({ onBack, onNavigationChange }: InboxProps) {
     };
 
     setupSubscription();
-  }, [viewMode, currentConversation]);
+  }, [viewMode, currentConversationDeviceId]);
 
   const loadConversations = async () => {
     try {
@@ -172,8 +172,8 @@ export function Inbox({ onBack, onNavigationChange }: InboxProps) {
       const devices = await trpc.device.list.query();
       const device = devices.find((d: any) => d.id === deviceId);
 
+      setCurrentConversationDeviceId(deviceId);
       setCurrentConversation({
-        deviceId,
         deviceName: device?.name || "Unknown Device",
         messages: messages.reverse(), // Show oldest first
       });
@@ -198,17 +198,17 @@ export function Inbox({ onBack, onNavigationChange }: InboxProps) {
   };
 
   const handleSendMessage = async () => {
-    if (!inputText.trim() || !currentConversation) return;
+    if (!inputText.trim() || !currentConversationDeviceId) return;
 
     const deviceId = await getDeviceId();
     if (!deviceId) return;
 
     try {
-      await sendEncryptedMessage(deviceId, currentConversation.deviceId, inputText.trim());
+      await sendEncryptedMessage(deviceId, currentConversationDeviceId, inputText.trim());
       setInputText("");
       setIsTyping(false);
       setInputFieldFocus(false);
-      loadConversationMessages(currentConversation.deviceId);
+      loadConversationMessages(currentConversationDeviceId);
     } catch (error) {
       console.error("[inbox] Failed to send message:", error);
     }
@@ -280,6 +280,7 @@ export function Inbox({ onBack, onNavigationChange }: InboxProps) {
             setInputFieldFocus(false);
             setViewMode("list");
             setCurrentConversation(null);
+            setCurrentConversationDeviceId(null);
             loadConversations();
           } else if (key === "t" || key === "T" || key === "r" || key === "R" || key === "\r") {
             // Start typing / Reply
@@ -289,7 +290,7 @@ export function Inbox({ onBack, onNavigationChange }: InboxProps) {
         },
       });
     }
-  }, [viewMode, selectedIndex, conversations, currentConversation, messageScrollIndex, isTyping, inputText, onNavigationChange]);
+  }, [viewMode, selectedIndex, conversations, currentConversation, currentConversationDeviceId, messageScrollIndex, isTyping, inputText, onNavigationChange]);
 
   const formatTimestamp = (timestamp: number): string => {
     const date = new Date(timestamp);
