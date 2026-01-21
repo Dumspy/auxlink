@@ -14,6 +14,7 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import * as SecureStore from "expo-secure-store";
 
@@ -29,6 +30,7 @@ export default function ChatScreen() {
   const params = useLocalSearchParams();
   const recipientDeviceId = params.deviceId as string;
   const recipientDeviceName = params.deviceName as string;
+  const { top: topInset } = useSafeAreaInsets();
 
   const [messages, setMessages] = useState<LocalMessage[]>([]);
   const [inputText, setInputText] = useState("");
@@ -329,7 +331,7 @@ export default function ChatScreen() {
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
-        keyboardVerticalOffset={100}
+        keyboardVerticalOffset={Platform.OS === "ios" ? topInset + 56 : 0}
       >
         <Container scrollable={false} className="flex-1">
           {/* Messages list */}
