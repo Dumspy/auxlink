@@ -6,6 +6,7 @@ import { Container } from "@/components/container";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { authClient } from "@/lib/auth-client";
 import { queryClient } from "@/utils/trpc";
+import { clearAllLocalData } from "@/lib/clear-data";
 
 export default function Settings() {
   const { data: session } = authClient.useSession();
@@ -30,6 +31,34 @@ export default function Settings() {
         },
       },
     ]);
+  }
+
+  async function handleClearData() {
+    Alert.alert(
+      "Clear All Data",
+      "This will permanently delete all local data including:\n\n• Login session\n• Device ID\n• Encryption keys\n• All chat history\n\nThis action cannot be undone. Are you sure?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Clear Data",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await clearAllLocalData();
+              router.replace("/(auth)/login" as any);
+            } catch (error) {
+              Alert.alert(
+                "Error",
+                `Failed to clear data: ${error instanceof Error ? error.message : "Unknown error"}`
+              );
+            }
+          },
+        },
+      ]
+    );
   }
 
   return (
@@ -70,6 +99,17 @@ export default function Settings() {
           accessibilityRole="button"
         >
           <Button.Label style={{ color: "#FFFFFF" }}>Logout</Button.Label>
+        </Button>
+
+        {/* Clear all data button */}
+        <Button
+          onPress={handleClearData}
+          className="w-full mt-2"
+          style={{ backgroundColor: "transparent", borderColor: "#EF4444", borderWidth: 1 }}
+          accessibilityLabel="Clear all local data, including login session and chat history"
+          accessibilityRole="button"
+        >
+          <Button.Label style={{ color: "#EF4444" }}>Clear All Data</Button.Label>
         </Button>
 
         {/* App info */}

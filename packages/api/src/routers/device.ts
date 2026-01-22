@@ -18,7 +18,7 @@ export const deviceRouter = router({
         publicKey: z.string().optional(),
         // Optional: provide existing device ID to update instead of create
         deviceId: z.string().uuid().optional(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const { deviceType, userAgent, publicKey, deviceId } = input;
@@ -77,14 +77,17 @@ export const deviceRouter = router({
         .object({
           deviceType: z.enum(["mobile", "tui"]).optional(),
         })
-        .optional()
+        .optional(),
     )
     .query(async ({ input, ctx }) => {
       const userId = ctx.session.user.id;
 
       const devices = await db.query.device.findMany({
         where: input?.deviceType
-          ? and(eq(device.userId, userId), eq(device.deviceType, input.deviceType))
+          ? and(
+              eq(device.userId, userId),
+              eq(device.deviceType, input.deviceType),
+            )
           : eq(device.userId, userId),
         orderBy: (device, { desc }) => [desc(device.lastSeenAt)],
       });
@@ -97,7 +100,7 @@ export const deviceRouter = router({
     .input(
       z.object({
         deviceId: z.string().uuid(),
-      })
+      }),
     )
     .query(async ({ input, ctx }) => {
       const { deviceId } = input;
@@ -117,14 +120,14 @@ export const deviceRouter = router({
       }
 
       // Find paired devices based on device type
-      let pairedDevices: typeof device.$inferSelect[] = [];
+      let pairedDevices: (typeof device.$inferSelect)[] = [];
 
       if (userDevice.deviceType === "mobile") {
         // Get all TUIs paired with this mobile device
         const pairings = await db.query.devicePairing.findMany({
           where: and(
             eq(devicePairing.mobileDeviceId, deviceId),
-            eq(devicePairing.isActive, true)
+            eq(devicePairing.isActive, true),
           ),
           with: {
             tuiDevice: true,
@@ -136,7 +139,7 @@ export const deviceRouter = router({
         const pairing = await db.query.devicePairing.findFirst({
           where: and(
             eq(devicePairing.tuiDeviceId, deviceId),
-            eq(devicePairing.isActive, true)
+            eq(devicePairing.isActive, true),
           ),
           with: {
             mobileDevice: true,
@@ -155,7 +158,7 @@ export const deviceRouter = router({
     .input(
       z.object({
         deviceId: z.string().uuid(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const { deviceId } = input;
@@ -173,7 +176,10 @@ export const deviceRouter = router({
         });
       }
 
-      await db.update(device).set({ lastSeenAt: new Date() }).where(eq(device.id, deviceId));
+      await db
+        .update(device)
+        .set({ lastSeenAt: new Date() })
+        .where(eq(device.id, deviceId));
 
       return { success: true };
     }),
@@ -183,7 +189,7 @@ export const deviceRouter = router({
     .input(
       z.object({
         deviceId: z.string().uuid(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const { deviceId } = input;
@@ -214,7 +220,7 @@ export const deviceRouter = router({
       z.object({
         mobileDeviceId: z.string().uuid(),
         tuiDeviceId: z.string().uuid(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       const { mobileDeviceId, tuiDeviceId } = input;
@@ -244,8 +250,8 @@ export const deviceRouter = router({
         .where(
           and(
             eq(devicePairing.mobileDeviceId, mobileDeviceId),
-            eq(devicePairing.tuiDeviceId, tuiDeviceId)
-          )
+            eq(devicePairing.tuiDeviceId, tuiDeviceId),
+          ),
         );
 
       return { success: true };
